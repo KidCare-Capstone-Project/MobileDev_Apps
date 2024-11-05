@@ -1,83 +1,218 @@
 package com.callcenter.kidcare.ui.uionly
 
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
-import coil.decode.GifDecoder
-import coil.imageLoader
+import androidx.compose.ui.unit.sp
 import com.callcenter.kidcare.R
-import com.callcenter.kidcare.ui.theme.particle.ParticleAnimation
 import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(onTimeout: () -> Unit) {
     var isVisible by remember { mutableStateOf(true) }
-    LocalContext.current
 
-    val transition = updateTransition(targetState = isVisible, label = "SplashTransition")
-
-    val scale by transition.animateFloat(
-        transitionSpec = { tween(durationMillis = 500, easing = FastOutSlowInEasing) },
-        label = "ScaleAnimation"
-    ) { state -> if (state) 1f else 0.8f }
-
-    val alpha by transition.animateFloat(
-        transitionSpec = { tween(durationMillis = 500, easing = FastOutSlowInEasing) },
-        label = "AlphaAnimation"
-    ) { state -> if (state) 1f else 0f }
+    val fadeInAnimation = remember { Animatable(0f) }
+    val scaleAnimation = remember { Animatable(0.8f) }
+    val slideUpAnimation = remember { Animatable(50f) }
 
     LaunchedEffect(Unit) {
+
+        fadeInAnimation.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(
+                durationMillis = 1000,
+                easing = EaseOutCubic
+            )
+        )
+
+        scaleAnimation.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(
+                durationMillis = 1000,
+                easing = EaseOutBack
+            )
+        )
+
+        slideUpAnimation.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(
+                durationMillis = 1000,
+                easing = EaseOutQuad
+            )
+        )
+
         delay(3000)
         isVisible = false
         delay(500)
         onTimeout()
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .graphicsLayer(
-                scaleX = scale,
-                scaleY = scale,
-                alpha = alpha
-            ),
-        contentAlignment = Alignment.Center
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = androidx.compose.animation.fadeIn(),
+        exit = androidx.compose.animation.fadeOut()
     ) {
-        val screenWidth = LocalContext.current.resources.displayMetrics.widthPixels
-        val screenHeight = LocalContext.current.resources.displayMetrics.heightPixels
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .graphicsLayer {
+                    alpha = fadeInAnimation.value
+                    scaleX = scaleAnimation.value
+                    scaleY = scaleAnimation.value
+                    translationY = slideUpAnimation.value
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                AnimatedLogo(
+                    drawableId = R.drawable.assets_logo_kidcare,
+                    description = "Top Logo",
+                    modifier = Modifier
+                        .padding(top = 32.dp)
+                        .size(250.dp)
+                )
 
-        ParticleAnimation(screenWidth, screenHeight)
-        Image(
-            painter = rememberAsyncImagePainter(
-                model = R.drawable.logo_sidokter_login_screen_animation,
-                imageLoader = LocalContext.current.imageLoader.newBuilder()
-                    .components {
-                        add(GifDecoder.Factory())
-                    }
-                    .build()
-            ),
-            contentDescription = null,
-            modifier = Modifier.size(280.dp)
+                AnimatedPartnerSection()
+
+                AnimatedImage(
+                    drawableId = R.drawable.assets_splashcreen_bottom,
+                    description = "Stunting",
+                    modifier = Modifier
+                        .padding(bottom = 32.dp)
+                        .height(180.dp)
+                        .fillMaxWidth()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AnimatedLogo(drawableId: Int, description: String, modifier: Modifier = Modifier) {
+    var visible by remember { mutableStateOf(false) }
+
+    val alphaAnim by animateFloatAsState(
+        targetValue = if (visible) 1f else 0f,
+        animationSpec = tween(durationMillis = 1000)
+    )
+    val scaleAnim by animateFloatAsState(
+        targetValue = if (visible) 1f else 0.8f,
+        animationSpec = tween(durationMillis = 1000)
+    )
+
+    LaunchedEffect(Unit) {
+        visible = true
+    }
+
+    Image(
+        painter = painterResource(id = drawableId),
+        contentDescription = description,
+        modifier = modifier
+            .alpha(alphaAnim)
+            .scale(scaleAnim)
+    )
+}
+
+@Composable
+fun AnimatedPartnerSection() {
+    var visible by remember { mutableStateOf(false) }
+
+    val alphaAnim by animateFloatAsState(
+        targetValue = if (visible) 1f else 0f,
+        animationSpec = tween(durationMillis = 1000, delayMillis = 500)
+    )
+    val slideAnim by animateDpAsState(
+        targetValue = if (visible) 0.dp else 50.dp,
+        animationSpec = tween(durationMillis = 1000, delayMillis = 500, easing = EaseOutQuadEasing)
+    )
+
+    LaunchedEffect(Unit) {
+        visible = true
+    }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .alpha(alphaAnim)
+            .offset(y = slideAnim)
+    ) {
+        Text(
+            text = "Mitra Program Resmi BY",
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.Black
         )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(26.dp),
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
+            AnimatedImage(
+                drawableId = R.drawable.assets_logo_bangkit_academy,
+                description = "Mitra 1 Logo",
+                modifier = Modifier.size(100.dp)
+            )
+            AnimatedImage(
+                drawableId = R.drawable.assets_logo_kampus_merdeka,
+                description = "Mitra 2 Logo",
+                modifier = Modifier.size(100.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun AnimatedImage(drawableId: Int, description: String, modifier: Modifier = Modifier) {
+    var visible by remember { mutableStateOf(false) }
+
+    val fadeAnim by animateFloatAsState(
+        targetValue = if (visible) 1f else 0f,
+        animationSpec = tween(durationMillis = 1000, delayMillis = 100)
+    )
+    val scaleAnim by animateFloatAsState(
+        targetValue = if (visible) 1f else 0.8f,
+        animationSpec = tween(durationMillis = 1000, delayMillis = 100)
+    )
+
+    LaunchedEffect(Unit) {
+        visible = true
+    }
+
+    Image(
+        painter = painterResource(id = drawableId),
+        contentDescription = description,
+        modifier = modifier
+            .alpha(fadeAnim)
+            .scale(scaleAnim)
+    )
+}
+
+val EaseOutCubic: Easing = CubicBezierEasing(0.215f, 0.61f, 0.355f, 1f)
+
+val EaseOutBack: Easing = BackOutEasing(1.70158f)
+
+val EaseOutQuadEasing: Easing = Easing { it * (2 - it) }
+
+fun BackOutEasing(s: Float): Easing {
+    return Easing { x ->
+        val c1 = s
+        val c3 = c1 + 1
+        1 + c3 * Math.pow((x - 1).toDouble(), 3.0).toFloat() + c1 * Math.pow((x - 1).toDouble(), 2.0).toFloat()
     }
 }

@@ -63,13 +63,13 @@ import com.google.firebase.auth.FirebaseAuth
 @Composable
 fun KidCareApp() {
     KidCareTheme {
-        val KidCareNavController = rememberKidCareNavController()
+        val kidCareNavController = rememberKidCareNavController()
         SharedTransitionLayout {
             CompositionLocalProvider(
                 LocalSharedTransitionScope provides this
             ) {
                 NavHost(
-                    navController = KidCareNavController.navController,
+                    navController = kidCareNavController.navController,
                     startDestination = MainDestinations.HOME_ROUTE
                 ) {
                     composableWithCompositionLocal(
@@ -108,7 +108,7 @@ fun MainContainer(
             }
         )
     } else {
-        val KidCareScaffoldState = rememberKidCareScaffoldState()
+        val kidCareScaffoldState = rememberKidCareScaffoldState()
         val navController = rememberKidCareNavController().navController
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
@@ -137,7 +137,7 @@ fun MainContainer(
                     snackbar = { snackbarData -> KidCareSnackbar(snackbarData) }
                 )
             },
-            snackBarHostState = KidCareScaffoldState.snackBarHostState,
+            snackBarHostState = kidCareScaffoldState.snackBarHostState,
         ) { padding ->
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(modifier = Modifier.fillMaxSize()) {

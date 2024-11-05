@@ -201,25 +201,25 @@ fun PagerIndicator(
 private fun ButtonGrid() {
 
     val buttons: List<Pair<String, ImageVector>> = listOf(
-        Pair("Booking Vaksin", Icons.Filled.LocalHospital),
-        Pair("Chat Dokter", Icons.Filled.Chat),
-        Pair("Voucher Layanan", Icons.Filled.CardGiftcard),
-        Pair("Info Produk", Icons.Filled.Info)
+        Pair("dummy 1", Icons.Filled.LocalHospital),
+        Pair("dummy 2", Icons.Filled.Chat),
+        Pair("dummy 3", Icons.Filled.CardGiftcard),
+        Pair("dummy 4", Icons.Filled.Info)
     )
 
     fun handleButtonClick(buttonText: String) {
         when (buttonText) {
             "Booking Vaksin" -> {
-                println("Booking Vaksin clicked")
+                println("dummy 1 clicked")
             }
             "Chat Dokter" -> {
-                println("Chat Dokter clicked")
+                println("dummy 2 clicked")
             }
             "Voucher Layanan" -> {
-                println("Voucher Layanan clicked")
+                println("dummy 3 clicked")
             }
             "Info Produk" -> {
-                println("Info Produk clicked")
+                println("dummy 4 clicked")
             }
         }
     }
