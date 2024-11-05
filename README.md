@@ -20,7 +20,7 @@ KID CARE MOBILE DEVELOPMENT README
 
 ### Roles/personnel
 
-* Project Plan ( M413B4KX3878 - Riska Dewi Yuliyanti, M211B4KX0695 - Ashtri Cahyani, M312B4KX2146 - Kartika Rahma Sulistyawati, C413B4KY4123 - Shandy Satria Nugraha, C764B4KX1539 - Fitri Sri Mulyani, A211B4KY1765 - Hendriansyah Rizky Setiawan, A211B4KY2173 - Kenny Josiah Silaen)
+* Project Plan ( M413B4KX3878 - Riska Dewi Yuliyanti, M211B4KX0695 - Ashtri Cahyani, M312B4KX2146 - Kartika Rahma Sulistyawati, C413B4KY4123 - Shandy Satria Nugraha, C764B4KX1539 - Fitri Sri Mulyani, A211B4KY1765 - Hendriansyah Rizky Setiawan, A211B4KY2173 - Kenny Josiah Silaen )
 * UI/UX ( A211B4KY1765 - Hendriansyah Rizky Setiawan, A211B4KY2173 - Kenny Josiah Silaen, M413B4KX3878 - Riska Dewi Yuliyanti, C413B4KY4123 - Shandy Satria Nugraha )
 * Build Machine Learning Model ( M312B4KX2146 - Kartika Rahma Sulistyawati, M413B4KX3878 - Riska Dewi Yuliyanti, M211B4KX0695 - Ashtri Cahyani )
 * Android Apps Development ( A211B4KY1765 - Hendriansyah Rizky Setiawan, A211B4KY2173 - Kenny Josiah Silaen )
@@ -124,7 +124,7 @@ The team will focus on developing and testing the following features:
 
 ### 1. Clone this Project to your Computer
 ```bash
-git clone https://github.com/SiDokter-Capstone-Project/MobileDev_Apps.git
+git clone https://github.com/KidCare-Capstone-Project/MobileDev_Apps.git
 ```
 
 or you can use Android Studio 
