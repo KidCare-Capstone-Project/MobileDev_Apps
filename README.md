@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img align="center" src="./assets/github/KidCare%20-%20Capstone.gif"  width="500"></img>
+  <img align="center" src="./assets/github/KidCare%20-%20Capstone.gif" width="500"></img>
 <br>
 KID CARE MOBILE DEVELOPMENT README
 </h1>
@@ -30,10 +30,10 @@ KID CARE MOBILE DEVELOPMENT README
 This MD project is our final project for Google Bangkit Academy 2024 Batch 2.
 
 **Machine Learning:**
-[KidCare Machine Learning Apps Developments](#)
+[KidCare Machine Learning Apps Developments](https://github.com/KidCare-Capstone-Project/ML_Structuring_Model)
 
 **Cloud:**
-[KidCare Cloud Service](#)
+[KidCare Cloud Service](https://github.com/KidCare-Capstone-Project/Cloud_computing)
 
 **Project Background:**
 
