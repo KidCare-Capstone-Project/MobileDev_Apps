@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">KidCare</string>
+    <string name="label_back">Back</string>
+
+    <!-- Home Tabs -->
+    <string name="home_feed">Home</string>
+    <string name="home_favorites">Favorite</string>
+    <string name="home_profile">Profile</string>
+
+    <!-- Home -->
+
+    <!-- Search -->
+
+    <!-- BATAS -->
+    <string name="youtube_api_key">ISI</string>
+    <string name="ExpandMore">Expand More</string>
+
+</resources>
