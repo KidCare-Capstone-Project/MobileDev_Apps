@@ -53,7 +53,7 @@ The KID CARE application is developed with Android technology to provide wide ac
 
 - Retrofit and OkHttp for reliable API integration in retrieving nutritional and health information data.
 
-- CameraX to allow users to upload photos of their child's development and compare them with standard growth data.
+- Camera to allow users to upload photos of their child's development and compare them with standard growth data.
 
 **Case:**
 
@@ -107,7 +107,6 @@ The team will focus on developing and testing the following features:
 - [x] [Generative Ai Gemini API](https://ai.google.dev/gemini-api/docs/get-started/tutorial?lang=android&hl=id)
 - [x] [JavaMail](https://javaee.github.io/javamail/Android)
 - [x] [Coil Gif](https://github.com/coil-kt/coil)
-- [x] [CameraX](https://developer.android.com/training/camerax)
 - [x] [Android Youtube Player](https://github.com/PierfrancescoSoffritti/android-youtube-player)
 - [x] [preferences](https://developer.android.com/reference/android/preference/Preference)
 - [x] [Navigation Component](https://developer.android.com/guide/navigation/navigation-getting-started)
