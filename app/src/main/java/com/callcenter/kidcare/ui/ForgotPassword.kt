@@ -120,6 +120,7 @@ fun ForgotPassword() {
                         }
                     }
                 ) {
+                    @Suppress("DEPRECATION")
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back to Login",

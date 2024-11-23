@@ -109,14 +109,13 @@ fun AIInteraction(onClose: () -> Unit) {
         cameraLauncher.launch(FileProvider.getUriForFile(context, "com.callcenter.kidcare.fileprovider", imageFile))
     }
 
-    // Camera permission request launcher
     val requestCameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            takePicture() // Start camera if permission is granted
+            takePicture()
         } else {
-            permissionDenied = true // Show popup if permission is denied
+            permissionDenied = true
         }
     }
 
@@ -129,52 +128,48 @@ fun AIInteraction(onClose: () -> Unit) {
         }
     }
 
-    // Function to check for permission and request if necessary
     fun checkCameraPermission() {
         when (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)) {
             PackageManager.PERMISSION_GRANTED -> {
-                takePicture() // Permission granted, proceed with camera
+                takePicture()
             }
             else -> {
-                // Request camera permission
                 requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
             }
         }
     }
 
-    // Display an alert dialog if permission is denied
     if (permissionDenied) {
         AlertDialog(
             onDismissRequest = { permissionDenied = false },
             title = {
                 Text(
                     text = "Permission Required",
-                    color = Color.Red // Custom color for the title
+                    color = Color.Red
                 )
             },
             text = {
                 Text(
                     text = "Camera permission is required to take pictures.",
-                    color = Color.Gray // Custom color for the body text
+                    color = Color.Gray
                 )
             },
             confirmButton = {
                 Button(
                     onClick = {
                         permissionDenied = false
-                        checkCameraPermission() // Recheck and request permission
+                        checkCameraPermission()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF0E5E6C) // Custom container color for the confirm button
+                        containerColor = Color(0xFF0E5E6C)
                     )
                 ) {
-                    Text("Close", color = Color.White) // Custom text color
+                    Text("Close", color = Color.White)
                 }
             },
             dismissButton = {
                 Button(
                     onClick = {
-                        // Open app settings if the permission is denied
                         permissionDenied = false
                         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                             data = Uri.fromParts("package", context.packageName, null)
@@ -182,22 +177,21 @@ fun AIInteraction(onClose: () -> Unit) {
                         context.startActivity(intent)
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF0E5E6C) // Custom container color for the dismiss button
+                        containerColor = Color(0xFF0E5E6C)
                     )
                 ) {
-                    Text("Open Settings", color = Color.White) // Custom text color
+                    Text("Open Settings", color = Color.White)
                 }
             },
-            containerColor = Color.LightGray // Custom background color for the dialog
+            containerColor = Color.LightGray
         )
     }
 
-    // Coroutine to animate text
     LaunchedEffect(Unit) {
         val fullText = "Selamat datang di AI Interaction!"
         for (i in fullText.indices) {
             displayedText += fullText[i]
-            delay(100) // Delay for typing effect
+            delay(100)
         }
     }
 
@@ -218,7 +212,6 @@ fun AIInteraction(onClose: () -> Unit) {
                     .padding(horizontal = 16.dp)
                     .fillMaxSize()
             ) {
-                // Opening Text
                 if (!chatStarted) {
                     Box(
                         modifier = Modifier
@@ -234,7 +227,6 @@ fun AIInteraction(onClose: () -> Unit) {
                     }
                 }
 
-                // LazyColumn for messages
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -245,7 +237,6 @@ fun AIInteraction(onClose: () -> Unit) {
                         MessageBox(message = message)
                     }
 
-                    // Displaying selected images
                     if (selectedImages.isNotEmpty()) {
                         item {
                             LazyRow(
@@ -266,20 +257,19 @@ fun AIInteraction(onClose: () -> Unit) {
                                                 .clip(RoundedCornerShape(8.dp))
                                         )
 
-                                        // Responsive Delete button for removing images
                                         IconButton(
                                             onClick = {
                                                 selectedImages = selectedImages.filterNot { it == image }
                                             },
                                             modifier = Modifier
                                                 .align(Alignment.TopEnd)
-                                                .size(32.dp)  // Set a default size
-                                                .padding(8.dp) // Adjust padding for touch area
+                                                .size(32.dp)
+                                                .padding(8.dp)
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Filled.Delete,
                                                 contentDescription = "Delete Image",
-                                                modifier = Modifier.size(24.dp) // Make icon size responsive
+                                                modifier = Modifier.size(24.dp)
                                             )
                                         }
                                     }
@@ -288,7 +278,6 @@ fun AIInteraction(onClose: () -> Unit) {
                         }
                     }
 
-                    // Show progress indicator when loading
                     if (isLoading) {
                         item {
                             CircularProgressIndicator(
@@ -299,16 +288,14 @@ fun AIInteraction(onClose: () -> Unit) {
                     }
                 }
 
-                // Add a Spacer to separate the input field from the message list
                 Spacer(modifier = Modifier.size(8.dp))
 
-                // Inside your MessageInputField (or wherever you want to trigger the camera)
                 MessageInputField(
                     onSendMessage = { message ->
                         if (message.isNotEmpty() || selectedImages.isNotEmpty()) {
                             messages.add(Message(message, getCurrentTime(), true))
                             userMessage = ""
-                            chatStarted = true // Set chatStarted to true when sending the first message
+                            chatStarted = true
                             coroutineScope.launch {
                                 isLoading = true
                                 sendMessage(message, selectedImages, messages)
@@ -320,7 +307,7 @@ fun AIInteraction(onClose: () -> Unit) {
                         imagePickerLauncher.launch("image/*")
                     },
                     onTakePicture = {
-                        checkCameraPermission() // Ensure permission is checked before launching camera
+                        checkCameraPermission()
                     }
                 )
             }
@@ -328,7 +315,6 @@ fun AIInteraction(onClose: () -> Unit) {
     }
 }
 
-// Function to create an image file and return its URI
 private fun createImageFile(context: Context): File {
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
     val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)

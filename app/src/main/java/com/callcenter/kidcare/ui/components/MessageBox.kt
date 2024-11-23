@@ -1,6 +1,5 @@
 package com.callcenter.kidcare.ui.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -20,7 +19,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberImagePainter
+import coil.compose.AsyncImage
 import com.callcenter.kidcare.R
 import com.callcenter.kidcare.data.Message
 import com.google.firebase.auth.FirebaseAuth
@@ -131,8 +130,8 @@ fun MessageBox(message: Message) {
                     .align(Alignment.CenterEnd)
             ) {
                 if (profileImageUrl != null) {
-                    Image(
-                        painter = rememberImagePainter(data = profileImageUrl),
+                    AsyncImage(
+                        model = profileImageUrl,
                         contentDescription = null,
                         modifier = Modifier.clip(CircleShape)
                     )
@@ -147,4 +146,3 @@ fun MessageBox(message: Message) {
         }
     }
 }
-

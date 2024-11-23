@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.compose)
 
     id("com.google.gms.google-services")
+    kotlin("plugin.serialization") version "2.0.20"
 }
 
 android {
@@ -16,7 +17,7 @@ android {
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "GEMINI_API_KEY", "\"${System.getenv("GEMINI_API_KEY") ?: "AIzaSyDYMwp3N_BGpRCCk-Nfu57SdOLHbPZS55U"}\"")
     }
@@ -40,7 +41,7 @@ android {
         }
 
         getByName("release") {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -90,13 +91,8 @@ dependencies {
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.android)
 
-    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.androidx.lifecycle.viewModelCompose)
-    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.constraintlayout.compose)
 
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.foundation)
@@ -134,15 +130,25 @@ dependencies {
     implementation(libs.okhttp.v4120)
     implementation(libs.generativeai)
 
-    implementation ("com.google.accompanist:accompanist-pager:0.36.0")
-    implementation ("com.google.accompanist:accompanist-pager-indicators:0.36.0")
+    implementation (libs.accompanist.pager)
+    implementation (libs.accompanist.pager.indicators)
 
-    implementation("com.google.firebase:firebase-firestore-ktx:25.1.0")
-    implementation("com.sun.mail:android-activation:1.6.2")
-    implementation("com.sun.mail:android-mail:1.6.2")
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.android.activation)
+    implementation(libs.android.mail)
 
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
-    implementation("io.coil-kt:coil-gif:2.7.0")
-    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.1")
-    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:chromecast-sender:0.30")
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.core)
+    implementation(libs.chromecast.sender)
+
+    implementation(libs.accompanist.placeholder.material)
+    implementation(libs.firebase.storage.ktx)
+
+    implementation("com.google.android.gms:play-services-tflite-java:16.3.0")
+    implementation("com.google.android.gms:play-services-tflite-gpu:16.3.0")
+
+    implementation("org.tensorflow:tensorflow-lite:2.16.1")
+    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
+
+    implementation("com.patrykandpatrick.vico:compose-m3:1.15.0")
 }

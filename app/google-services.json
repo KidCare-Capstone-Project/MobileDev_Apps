@@ -2,7 +2,7 @@
   "project_info": {
     "project_number": "144241347805",
     "project_id": "kidcare-info",
-    "storage_bucket": "kidcare-info.appspot.com"
+    "storage_bucket": "kidcare-info.firebasestorage.app"
   },
   "client": [
     {

@@ -1,5 +1,6 @@
 package com.callcenter.kidcare.ui.components
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,6 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.TextSelectionColors
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material.icons.outlined.CameraAlt
@@ -18,6 +22,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -34,6 +39,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.callcenter.kidcare.R
+import com.callcenter.kidcare.ui.theme.DarkText
+import com.callcenter.kidcare.ui.theme.WhiteColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,6 +111,7 @@ fun MessageInputField(onSendMessage: (String) -> Unit, onSelectImages: () -> Uni
                         contentColor = Color(0xFFCCCCCC)
                     )
                 ) {
+                    @Suppress("DEPRECATION")
                     Icon(imageVector = Icons.Outlined.Send, contentDescription = null)
                 }
             }
@@ -114,11 +122,20 @@ fun MessageInputField(onSendMessage: (String) -> Unit, onSelectImages: () -> Uni
         ),
         shape = RoundedCornerShape(50),
         colors = TextFieldDefaults.colors(
+            focusedTextColor = if (isSystemInDarkTheme()) WhiteColor else DarkText,
+            unfocusedTextColor = if (isSystemInDarkTheme()) WhiteColor else DarkText,
+            disabledTextColor = if (isSystemInDarkTheme()) WhiteColor else DarkText.copy(alpha = ContentAlpha.disabled),
+            errorTextColor = MaterialTheme.colorScheme.error,
+            cursorColor = if (isSystemInDarkTheme()) WhiteColor else DarkText,
             focusedContainerColor = Color(0xFF2B2B2B),
             unfocusedContainerColor = Color(0xFF2B2B2B),
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
+            selectionColors = TextSelectionColors(
+                handleColor = if (isSystemInDarkTheme()) WhiteColor else DarkText,
+                backgroundColor = if (isSystemInDarkTheme()) WhiteColor else DarkText.copy(alpha = 0.4f)
+            )
         )
     )
 }

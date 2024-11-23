@@ -84,6 +84,7 @@ fun YouTubeAppBar(onClose: () -> Unit, onSearchClick: () -> Unit) {
         ),
         navigationIcon = {
             IconButton(onClick = { onClose() }) {
+                @Suppress("DEPRECATION")
                 Icon(
                     imageVector = Icons.Outlined.KeyboardArrowLeft,
                     contentDescription = null,

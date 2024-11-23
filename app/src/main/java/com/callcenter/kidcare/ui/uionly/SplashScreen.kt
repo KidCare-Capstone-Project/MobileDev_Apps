@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.callcenter.kidcare.R
 import kotlinx.coroutines.delay
+import kotlin.math.pow
 
 @Composable
 fun SplashScreen(onTimeout: () -> Unit) {
@@ -86,7 +87,7 @@ fun SplashScreen(onTimeout: () -> Unit) {
                     description = "Top Logo",
                     modifier = Modifier
                         .padding(top = 32.dp)
-                        .size(250.dp)
+                        .size(140.dp)
                 )
 
                 AnimatedPartnerSection()
@@ -110,11 +111,11 @@ fun AnimatedLogo(drawableId: Int, description: String, modifier: Modifier = Modi
 
     val alphaAnim by animateFloatAsState(
         targetValue = if (visible) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000)
+        animationSpec = tween(durationMillis = 1000), label = ""
     )
     val scaleAnim by animateFloatAsState(
         targetValue = if (visible) 1f else 0.8f,
-        animationSpec = tween(durationMillis = 1000)
+        animationSpec = tween(durationMillis = 1000), label = ""
     )
 
     LaunchedEffect(Unit) {
@@ -136,11 +137,12 @@ fun AnimatedPartnerSection() {
 
     val alphaAnim by animateFloatAsState(
         targetValue = if (visible) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000, delayMillis = 500)
+        animationSpec = tween(durationMillis = 1000, delayMillis = 500), label = ""
     )
     val slideAnim by animateDpAsState(
         targetValue = if (visible) 0.dp else 50.dp,
-        animationSpec = tween(durationMillis = 1000, delayMillis = 500, easing = EaseOutQuadEasing)
+        animationSpec = tween(durationMillis = 1000, delayMillis = 500, easing = EaseOutQuadEasing),
+        label = ""
     )
 
     LaunchedEffect(Unit) {
@@ -154,7 +156,7 @@ fun AnimatedPartnerSection() {
             .offset(y = slideAnim)
     ) {
         Text(
-            text = "Mitra Program Resmi BY",
+            text = "Program By",
             style = MaterialTheme.typography.titleMedium,
             color = Color.Black
         )
@@ -182,11 +184,11 @@ fun AnimatedImage(drawableId: Int, description: String, modifier: Modifier = Mod
 
     val fadeAnim by animateFloatAsState(
         targetValue = if (visible) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000, delayMillis = 100)
+        animationSpec = tween(durationMillis = 1000, delayMillis = 100), label = ""
     )
     val scaleAnim by animateFloatAsState(
         targetValue = if (visible) 1f else 0.8f,
-        animationSpec = tween(durationMillis = 1000, delayMillis = 100)
+        animationSpec = tween(durationMillis = 1000, delayMillis = 100), label = ""
     )
 
     LaunchedEffect(Unit) {
@@ -212,6 +214,6 @@ fun BackOutEasing(s: Float): Easing {
     return Easing { x ->
         val c1 = s
         val c3 = c1 + 1
-        1 + c3 * Math.pow((x - 1).toDouble(), 3.0).toFloat() + c1 * Math.pow((x - 1).toDouble(), 2.0).toFloat()
+        1 + c3 * (x - 1).toDouble().pow(3.0).toFloat() + c1 * (x - 1).toDouble().pow(2.0).toFloat()
     }
 }

@@ -70,25 +70,21 @@ val FunctionalGreen = Color(0xff52c41a)
 val FunctionalGrey = Color(0xfff6f6f6)
 val FunctionalDarkGrey = Color(0xff2e2e2e)
 
-// Warna Sekunder
 val Coral = Color(0xFFFF6F61)
 val Teal = Color(0xFF008080)
 
-// Warna Aksen
 val LightBlue = Color(0xFF57EFF5)
 val DarkBlue = Color(0xFF005687)
 
-// Warna Netral
 val DarkText = Color(0xFF1D1617)
 val LightBackground = Color(0xFFF7F8F8)
 val Gray = Color(0xFF7B6F72)
 
-// Warna Status
 val Error = Color(0xFFD00036)
 val Success = Color(0xFF52C41A)
 
 // costum
-val costum01 = Color(0xFF0B5C6A)
+val costum01 = Color(0xff00a1c7)
 val Primary = Color(0xFF2A3FD)
 val Secondary = Color(0xFF9DCEFF)
 val TextColor = Color(0xFF1D1617)
@@ -96,5 +92,40 @@ val AccentColor = Color(0xFFC58BF2)
 val GrayColor = Color(0xFF7B6F72)
 val WhiteColor = Color(0xFFFFFFFF)
 val BgColor = Color(0xFFF7F8F8)
+
+val ButtonLightColor = Color(0xff00a1c7)
+val ButtonDarkColor = Color(0xFF57EFF5)
+val TextLightColor = Color(0xFF1D1617)
+val TextDarkColor = Color.White
+
+val ButtonPressedLight = Color(0xFFE0F7FA)
+val ButtonPressedDark = Color(0xFF004D40)
+val ButtonHoverLight = Color(0xFFB2EBF2)
+val ButtonHoverDark = Color(0xFF00897B)
+
+val MinimalPrimary = Color(0xff00a1c7)
+val MinimalSecondary = Color(0xFFB0BEC5)
+val MinimalAccent = Color(0xFF81D4FA)
+val MinimalBackgroundLight = Color(0xFFF1F1F1)
+val MinimalBackgroundDark = Color(0xFF121212)
+val MinimalTextLight = Color(0xFF000000)
+val MinimalTextDark = Color(0xFFFFFFFF)
+val MinimalError = Color(0xFFD32F2F)
+
+
+val Costum02 = Color(0xFF37C2A4)
+
+val LightPrimaryColor = Ocean7
+val DarkPrimaryColor = Ocean4
+val LightBackgroundColor = Neutral0
+val DarkBackgroundColor = Neutral8
+val LightSurfaceColor = MinimalBackgroundLight
+val DarkSurfaceColor = MinimalBackgroundDark
+val LightTextColor = TextLightColor
+val DarkTextColor = TextDarkColor
+val LightOnSurfaceColor = DarkText
+val DarkOnSurfaceColor = WhiteColor
+val LightAccentColor = AccentColor
+val DarkAccentColor = Ocean6
 
 const val AlphaNearOpaque = 0.95f

@@ -16,7 +16,6 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Assistant
 import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material.icons.filled.YoutubeSearchedFor
@@ -63,9 +62,9 @@ fun DestinationBar(
     val sharedElementScope = LocalSharedTransitionScope.current ?: throw IllegalStateException("No shared element scope")
     val navAnimatedScope = LocalNavAnimatedVisibilityScope.current ?: throw IllegalStateException("No nav scope")
 
-    var showDialog by remember { mutableStateOf(false) }
+    var showMoreContent by remember { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
-        targetValue = if (showDialog) -90f else 0f
+        targetValue = if (showMoreContent) -90f else 0f, label = ""
     )
 
     val currentTime = remember { mutableStateOf(getCurrentTime()) }
@@ -143,7 +142,7 @@ fun DestinationBar(
                             }
 
                             IconButton(onClick = {
-                                onOpenOptions()
+                                showMoreContent = !showMoreContent
                             }) {
                                 Icon(
                                     imageVector = Icons.Outlined.ExpandMore,
@@ -160,35 +159,31 @@ fun DestinationBar(
                     )
                 )
                 KidCareDivider()
-            }
-        }
-    }
 
-    AnimatedVisibility(
-        visible = showDialog,
-        enter = slideInVertically(
-            initialOffsetY = { it },
-            animationSpec = tween(durationMillis = 300)
-        ) + fadeIn(animationSpec = tween(durationMillis = 300)),
-        exit = slideOutVertically(
-            targetOffsetY = { it },
-            animationSpec = tween(durationMillis = 300)
-        ) + fadeOut(animationSpec = tween(durationMillis = 300))
-    ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            DeliveryOptionsPanel(
-                onDismiss = { showDialog = false },
-                onOptionSelected = { option ->
-                    when (option) {
-                        1 -> navigateTo(MainDestinations.AI_INTERACTION_ROUTE)
-                        2 -> navigateTo(MainDestinations.YOUTUBE_HEALTH_ROUTE)
-                        // Tambahkan opsi lain jika perlu
-                    }
+                // Konten tambahan yang akan muncul saat tombol ditekan
+                AnimatedVisibility(
+                    visible = showMoreContent,
+                    enter = slideInVertically(
+                        initialOffsetY = { it },
+                        animationSpec = tween(durationMillis = 300)
+                    ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                    exit = slideOutVertically(
+                        targetOffsetY = { it },
+                        animationSpec = tween(durationMillis = 300)
+                    ) + fadeOut(animationSpec = tween(durationMillis = 300))
+                ) {
+                    DeliveryOptionsPanel(
+                        onDismiss = { showMoreContent = false },
+                        onOptionSelected = { option ->
+                            when (option) {
+                                1 -> navigateTo(MainDestinations.AI_INTERACTION_ROUTE)
+                                2 -> navigateTo(MainDestinations.YOUTUBE_HEALTH_ROUTE)
+                                // Tambahkan opsi lain jika perlu
+                            }
+                        }
+                    )
                 }
-            )
+            }
         }
     }
 
@@ -210,7 +205,7 @@ suspend fun checkInternetConnectivity(): Boolean {
                 socket.connect(InetSocketAddress("1.1.1.1", 53), 1500)
                 true
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
@@ -225,7 +220,7 @@ suspend fun checkPing(): Long {
                 val endTime = System.currentTimeMillis()
                 endTime - startTime
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             999
         }
     }
@@ -248,7 +243,7 @@ fun DeliveryOptionsPanel(
             .padding(16.dp)
             .clip(RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
-        color = Color(0xFF0E5E6C)
+        color = Color(0xff00a1c7)
     ) {
         Column(
             modifier = Modifier
@@ -258,6 +253,7 @@ fun DeliveryOptionsPanel(
             Text(
                 text = "~ Select Option ~",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color(0xfff2ffff),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp),
@@ -266,8 +262,7 @@ fun DeliveryOptionsPanel(
 
             listOf(
                 Icons.Filled.Assistant to "Generative AI" to 1,
-                Icons.Filled.YoutubeSearchedFor to "YouTube Health" to 2,
-                Icons.Filled.AccountCircle to "Option 3" to 3
+                Icons.Filled.YoutubeSearchedFor to "YouTube Health" to 2
             ).forEach { (pair, option) ->
                 val (icon, text) = pair
                 TextButton(
@@ -302,7 +297,7 @@ fun DeliveryOptionsPanel(
                     .padding(top = 16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFFFFF))
             ) {
-                Text("Close", color = Color(0xFF0E5E6C))
+                Text("Close", color = Color(0xff00a1c7))
             }
         }
     }

@@ -1,0 +1,92 @@
+<resources>
+    <string name="app_name">KidCare</string>
+    <string name="label_back">Back</string>
+
+    <!-- Home Tabs -->
+    <string name="home_feed">Home</string>
+    <string name="home_favorites">Favorite</string>
+    <string name="home_profile">Profile</string>
+
+    <!-- BATAS -->
+    <string name="youtube_api_key">AIzaSyCMZdwKDUaTfVcR251HO1casXxpE_uUTLk</string>
+    <string name="ExpandMore">Expand More</string>
+
+    <!--  Profile Section  -->
+    <string name="profile">Profile</string>
+    <string name="account">My Account</string>
+    <string name="about_us">About Us</string>
+    <string name="account_settings">Account Settings</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="logout">Logout</string>
+    <string name="language">Language</string>
+    <string name="system_default">System Default</string>
+    <string name="english">English</string>
+    <string name="indonesian">Indonesian</string>
+    <string name="error_occurred">An error has occurred</string>
+    <string name="error">Error</string>
+    <string name="ok">OK</string>
+    <string name="delete_confirmation_title">Delete Confirmation</string>
+    <string name="delete_confirmation_message">Are you sure you want to delete your account? This action cannot be undone.</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="collapse">Collapse</string>
+    <string name="expand">Expand</string>
+
+    <!--  Feature Grid Section  -->
+    <string name="predict">Predict</string>
+    <string name="ibu_hamil">Pregnant Mother</string>
+    <string name="pencegahan_stunting">Stunting Prevention</string>
+    <string name="penanganan_stunting">Stunting Management</string>
+    <string name="info_produk">Product Info</string>
+    <string name="resep_mpasi">MPASI Recipes</string>
+
+    <!--  Child Section  -->
+    <string name="profile_child">Child Profile</string>
+    <string name="no_child_profile">You don\'t have any child profiles yet</string>
+    <string name="add_child">Add Child</string>
+    <string name="add_child_profile">Add Child Profile</string>
+    <string name="height_cm">cm</string>
+    <string name="age_year_month">%1$d years %2$d months</string>
+    <string name="add">Add</string>
+
+    <!--  Recommended Article  -->
+    <string name="recommended_articles">Recommended Articles</string>
+    <string name="image_for">Image for %1$s</string>
+    <string name="placeholder_image">Placeholder Image</string>
+    <string name="see_more">See More</string>
+    <string name="no_articles_available">No articles available.</string>
+    <string name="view_count">Views</string>
+    <string name="love_count">Likes</string>
+
+    <!--  Data Child Section  -->
+    <string name="loading_child_profile">Loading Child Profile...</string>
+    <string name="profile_child_01">Child Profile</string>
+    <string name="update">Update</string>
+    <string name="delete_01">Delete</string>
+    <string name="last_updated">Last updated on: %1$s</string>
+    <string name="generating_analysis">Generating Analysis...</string>
+    <string name="growth_analysis">Growth Analysis</string>
+    <string name="delete_child_profile">Delete Child Profile</string>
+    <string name="delete_confirmation">Are you sure you want to delete this child profile? This action cannot be undone.</string>
+    <string name="cancel_01">Cancel</string>
+    <string name="confirm_delete">Yes, Delete</string>
+    <!-- Labels untuk GrowthResultCard -->
+    <string name="label_height">Height</string>
+    <string name="label_age">Age</string>
+    <string name="label_gender">Gender</string>
+    <!-- Tambahkan string lainnya sesuai kebutuhan -->
+    <string name="height_unit">cm</string>
+    <string name="age_years">years</string>
+    <string name="age_months">months</string>
+
+    <!--  About Us Section  -->
+    <string name="about_kidcare">About KidCare</string>
+    <string name="about_description">KidCare is an application designed to help parents and families understand, prevent, and handle stunting issues in children. We provide reliable information and features that support optimal child development.</string>
+    <string name="team_kidcare">KidCare Team</string>
+    <string name="contact_us">Contact Us</string>
+    <string name="contact_description">If you need assistance or have questions regarding the stunting application for children, please contact us via email at kidcarex@gmail.com or phone at +62 812-9657-9157.</string>
+    <string name="github">GitHub</string>
+    <string name="linkedin">LinkedIn</string>
+    <string name="admin_button">Admin Panel</string>
+
+</resources>

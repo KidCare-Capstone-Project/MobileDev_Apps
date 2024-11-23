@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -54,6 +55,7 @@ import com.callcenter.kidcare.ui.funcauth.FunLoginEmail
 import com.callcenter.kidcare.ui.funcauth.FunLoginGoogle
 import com.callcenter.kidcare.ui.theme.*
 
+@Suppress("DEPRECATION")
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
 fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
@@ -225,7 +227,11 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                             focusedIndicatorColor = Ocean8,
                             unfocusedIndicatorColor = Ocean6,
                             cursorColor = Ocean8,
-                            errorIndicatorColor = FunctionalRed
+                            errorIndicatorColor = FunctionalRed,
+                            selectionColors = TextSelectionColors(
+                                handleColor = Ocean8,
+                                backgroundColor = Ocean8.copy(alpha = 0.4f)
+                            )
                         )
                     )
 
@@ -264,7 +270,11 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                             focusedIndicatorColor = Ocean8,
                             unfocusedIndicatorColor = Ocean6,
                             cursorColor = Ocean8,
-                            errorIndicatorColor = FunctionalRed
+                            errorIndicatorColor = FunctionalRed,
+                            selectionColors = TextSelectionColors(
+                                handleColor = Ocean8,
+                                backgroundColor = Ocean8.copy(alpha = 0.4f)
+                            )
                         )
                     )
 

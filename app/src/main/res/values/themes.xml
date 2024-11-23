@@ -3,8 +3,6 @@
 <resources>
 
     <style name="Theme.KidCare" parent="Theme.Material.DayNight.NoActionBar">
-        <item name="android:colorPrimary">#00AEFF</item>
-        <item name="android:colorAccent">#00BBFF</item>
         <item name="android:dialogTheme">@style/Theme.DialogFullScreen</item>
     </style>
 

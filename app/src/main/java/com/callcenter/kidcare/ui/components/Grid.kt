@@ -1,5 +1,6 @@
 package com.callcenter.kidcare.ui.components
 
+import androidx.annotation.Keep
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
@@ -8,7 +9,7 @@ import androidx.compose.ui.layout.Layout
  * A simple grid which lays elements out vertically in evenly sized [columns].
  */
 @Composable
-fun VerticalGrid(
+@Keep fun VerticalGrid(
     modifier: Modifier = Modifier,
     columns: Int = 2,
     content: @Composable () -> Unit

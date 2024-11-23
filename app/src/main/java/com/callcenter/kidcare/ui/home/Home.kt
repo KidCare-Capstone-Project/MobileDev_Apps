@@ -1,6 +1,7 @@
 package com.callcenter.kidcare.ui.home
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.FloatRange
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
@@ -61,11 +62,33 @@ import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDeepLink
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.callcenter.kidcare.R
 import com.callcenter.kidcare.ui.LocalNavAnimatedVisibilityScope
 import com.callcenter.kidcare.ui.components.KidCareSurface
+import com.callcenter.kidcare.ui.home.about.AboutUs
+import com.callcenter.kidcare.ui.home.account.myaccount
+import com.callcenter.kidcare.ui.home.admin.AdminPanel
+import com.callcenter.kidcare.ui.home.admin.EditUser
+import com.callcenter.kidcare.ui.home.admin.Users
+import com.callcenter.kidcare.ui.home.admin.tambahartikel.AddArtikel
+import com.callcenter.kidcare.ui.home.admin.tambahbanner.AddBanner
+import com.callcenter.kidcare.ui.home.article.ArticleDetailScreen
+import com.callcenter.kidcare.ui.home.article.ArticleListScreen
+import com.callcenter.kidcare.ui.home.article.ArticleRecommendation
+import com.callcenter.kidcare.ui.home.childprofile.ChildDetailScreen
+import com.callcenter.kidcare.ui.home.childprofile.EditChildProfile
 import com.callcenter.kidcare.ui.home.favorite.Favorites
+import com.callcenter.kidcare.ui.home.mainfeaturesgrid.ibuhamil.IbuHamilScreen
+import com.callcenter.kidcare.ui.home.mainfeaturesgrid.infoproduk.info_produk
+import com.callcenter.kidcare.ui.home.mainfeaturesgrid.penangananstunting.penanganan_stunting
+import com.callcenter.kidcare.ui.home.mainfeaturesgrid.pencegahanstunting.pencegahan_stunting
+import com.callcenter.kidcare.ui.home.mainfeaturesgrid.predict.Predict
+import com.callcenter.kidcare.ui.home.mainfeaturesgrid.resepmpasi.resep_mpasi
+import com.callcenter.kidcare.ui.options.videoDetail.VideoDetailScreen
 import com.callcenter.kidcare.ui.theme.KidCareTheme
 import java.util.Locale
 
@@ -116,21 +139,123 @@ fun NavGraphBuilder.composableWithCompositionLocal(
 
 @RequiresApi(Build.VERSION_CODES.R)
 fun NavGraphBuilder.addHomeGraph(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavHostController
 ) {
     composable(HomeSections.FEED.route) { from ->
-        Feed(
-            modifier
-        )
+        Feed(modifier, navController)
     }
     composable(HomeSections.FAVORITES.route) {
         Favorites(modifier)
     }
     composable(HomeSections.PROFILE.route) {
-        Profile(modifier)
+        Profile(navController)
+    }
+    composable("aboutus") {
+        AboutUs(navController)
+    }
+    composable("account") {
+        myaccount()
+    }
+    composable("admin") {
+        AdminPanel(navController)
+    }
+    composable("users") {
+        Users(navController)
+    }
+    composable("add_article") {
+        AddArtikel(navController)
+    }
+    composable(
+        "admin/editUser/{userUuid}",
+        arguments = listOf(navArgument("userUuid") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val userUuid = backStackEntry.arguments?.getString("userUuid") ?: ""
+        EditUser(navController = navController, userUuid = userUuid)
+    }
+    composable(
+        "child_detail/{childId}",
+        arguments = listOf(navArgument("childId") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val childId = backStackEntry.arguments?.getString("childId") ?: ""
+        if (childId.isNotBlank()) {
+            ChildDetailScreen(childId = childId, navController = navController)
+        } else {
+            Log.e("Navigation", "Invalid child ID")
+        }
+    }
+    composable(
+        "editChildProfile/{childId}",
+        arguments = listOf(navArgument("childId") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val childId = backStackEntry.arguments?.getString("childId") ?: ""
+        EditChildProfile(childId = childId, navController = navController)
+    }
+
+    composable("articleRecommendation") {
+        ArticleRecommendation(
+            onArticleClick = { uuid ->
+                navController.navigate("articleDetail/$uuid")
+            },
+            onSeeMoreClick = {
+                navController.navigate("articleList")
+            }
+        )
+    }
+
+    composable("articleList") {
+        ArticleListScreen(
+            onArticleClick = { uuid ->
+                navController.navigate("articleDetail/$uuid")
+            },
+            onBack = { navController.popBackStack() }
+        )
+    }
+
+    composable(
+        "articleDetail/{uuid}",
+        arguments = listOf(navArgument("uuid") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val uuid = backStackEntry.arguments?.getString("uuid") ?: ""
+        ArticleDetailScreen(
+            uuid = uuid,
+            onBack = { navController.popBackStack() }
+        )
+    }
+
+    composable(
+        "videoDetail/{videoId}",
+        arguments = listOf(navArgument("videoId") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val videoId = backStackEntry.arguments?.getString("videoId") ?: ""
+        VideoDetailScreen(
+            videoId = videoId,
+            onBack = { navController.popBackStack() }
+        )
+    }
+
+    composable("ibu_hamil") {
+        IbuHamilScreen(navController)
+    }
+    composable("predict") {
+        Predict(navController)
+    }
+    composable("pencegahan_stunting") {
+        pencegahan_stunting(navController)
+    }
+    composable("penanganan_stunting") {
+        penanganan_stunting(navController)
+    }
+    composable("info_produk") {
+        info_produk(navController)
+    }
+    composable("resep_mpasi") {
+        resep_mpasi(navController)
+    }
+    composable("add_banner") {
+        AddBanner(navController)
     }
 }
-
 
 enum class HomeSections(
     @StringRes val title: Int,
@@ -148,14 +273,15 @@ fun KidCareBottomBar(
     currentRoute: String,
     navigateToRoute: (String) -> Unit,
     modifier: Modifier = Modifier,
-    color: Color = Color(0xFF0E5F6D),
+    color: Color = Color(0xff00a1c7),
     contentColor: Color = Color.White
 ) {
     val routes = remember { tabs.map { it.route } }
     val currentSection = tabs.first { it.route == currentRoute }
 
     KidCareSurface(
-        modifier = modifier,
+        modifier = modifier
+            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),  // Apply rounded corners on top only
         color = color,
         contentColor = contentColor
     ) {
@@ -204,7 +330,7 @@ fun KidCareBottomBar(
                     onSelected = { navigateToRoute(section.route) },
                     animSpec = springSpec,
                     modifier = BottomNavigationItemPadding
-                        .clip(BottomNavIndicatorShape)
+                        .clip(BottomNavIndicatorShape)  // Make sure it only affects the indicator
                 )
             }
         }

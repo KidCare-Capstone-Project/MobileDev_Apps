@@ -5,8 +5,6 @@ import android.app.Activity
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -29,10 +27,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.core.view.WindowCompat
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.callcenter.kidcare.R
 import com.callcenter.kidcare.data.*
 import com.callcenter.kidcare.ui.components.KidCareCard
@@ -46,11 +46,15 @@ import retrofit2.Response
 
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
-fun VideoDetailScreen(videoItem: VideoItem?, onBack: () -> Unit) {
+fun VideoDetailScreen(videoId: String, onBack: () -> Unit) {
     val context = LocalContext.current
     val activity = remember(context) { context as? Activity }
 
     var isFullscreen by remember { mutableStateOf(false) }
+
+    var videoItem by remember { mutableStateOf<VideoItem?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     var comments by remember { mutableStateOf<List<Comment>>(emptyList()) }
     var channelAvatarUrl by remember { mutableStateOf<String?>(null) }
@@ -59,25 +63,43 @@ fun VideoDetailScreen(videoItem: VideoItem?, onBack: () -> Unit) {
     var errorComments by remember { mutableStateOf<String?>(null) }
     var errorChannel by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(videoItem) {
-        videoItem?.let { video ->
-            fetchComments(video.id.videoId, context.getString(R.string.youtube_api_key)) { fetchedComments: List<Comment>, error: String? ->
-                if (error != null) {
-                    errorComments = error
-                } else {
-                    comments = fetchedComments
-                }
-                isLoadingComments = false
-            }
+    val youTubePlayerView = remember { YouTubePlayerView(context) }
 
-            fetchChannelDetails(video.snippet.channelId, context.getString(R.string.youtube_api_key)) { avatarUrl, error ->
-                if (avatarUrl != null) {
-                    channelAvatarUrl = avatarUrl
-                } else {
-                    errorChannel = error
+    DisposableEffect(youTubePlayerView) {
+        onDispose {
+            youTubePlayerView.release()
+        }
+    }
+
+    LaunchedEffect(videoId) {
+        val apiKey = context.getString(R.string.youtube_api_key)
+        fetchVideoDetails(videoId, apiKey) { fetchedVideo, error ->
+            if (error != null) {
+                errorMessage = error
+            } else {
+                videoItem = fetchedVideo
+                // Setelah video berhasil diambil, fetch komentar dan detail channel
+                fetchedVideo?.let { video ->
+                    fetchComments(video.id.videoId, apiKey) { fetchedComments, commentError ->
+                        if (commentError != null) {
+                            errorComments = commentError
+                        } else {
+                            comments = fetchedComments
+                        }
+                        isLoadingComments = false
+                    }
+
+                    fetchChannelDetails(video.snippet.channelId, apiKey) { avatarUrl, channelError ->
+                        if (avatarUrl != null) {
+                            channelAvatarUrl = avatarUrl
+                        } else {
+                            errorChannel = channelError
+                        }
+                        isLoadingChannel = false
+                    }
                 }
-                isLoadingChannel = false
             }
+            isLoading = false
         }
     }
 
@@ -97,239 +119,240 @@ fun VideoDetailScreen(videoItem: VideoItem?, onBack: () -> Unit) {
         }
     }
 
-    // BackHandler untuk saat tidak dalam mode fullscreen
     BackHandler(enabled = !isFullscreen) {
         onBack()
     }
 
-    // BackHandler tambahan untuk saat dalam mode fullscreen
     BackHandler(enabled = isFullscreen) {
         isFullscreen = false
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        videoItem?.let { video ->
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-            ) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(16 / 9f)
-                            .padding(bottom = 16.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color.Black)
-                    ) {
-                        val youTubePlayerView = remember { YouTubePlayerView(context) }
-
-                        DisposableEffect(youTubePlayerView) {
-                            onDispose {
-                                youTubePlayerView.release()
-                            }
-                        }
-
-                        AndroidView(factory = {
-                            youTubePlayerView
-                        }) { playerView ->
-                            playerView.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
-                                override fun onReady(youTubePlayer: YouTubePlayer) {
-                                    youTubePlayer.loadVideo(video.id.videoId, 0f)
-                                }
-                            })
-                        }
-
-                        IconButton(
-                            onClick = { isFullscreen = true },
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(8.dp)
-                                .background(Color.Black.copy(alpha = 0.5f), shape = CircleShape)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Fullscreen,
-                                contentDescription = "Fullscreen",
-                                tint = Color.White
-                            )
-                        }
-                    }
-
-                    KidCareCard(
-                        modifier = Modifier
-                            .padding(bottom = 16.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            ) {
-                                if (isLoadingChannel) {
-                                    // Placeholder saat memuat
-                                    Icon(
-                                        imageVector = Icons.Default.AccountCircle,
-                                        contentDescription = "User Avatar",
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .clip(CircleShape)
-                                            .background(Color.Gray.copy(alpha = 0.2f))
-                                            .padding(4.dp),
-                                        tint = Color.Gray
-                                    )
-                                } else if (errorChannel != null) {
-                                    Icon(
-                                        imageVector = Icons.Default.AccountCircle,
-                                        contentDescription = "User Avatar",
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .clip(CircleShape)
-                                            .background(Color.Gray.copy(alpha = 0.2f))
-                                            .padding(4.dp),
-                                        tint = Color.Gray
-                                    )
-                                } else {
-
-                                    Image(
-                                        painter = rememberImagePainter(
-                                            data = channelAvatarUrl,
-                                            builder = {
-                                                crossfade(true)
-                                                placeholder(R.drawable.ic_account_circle)
-                                                error(R.drawable.ic_account_circle)
-                                            }
-                                        ),
-                                        contentDescription = "User Avatar",
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .clip(CircleShape)
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = video.snippet.channelTitle,
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
-                                )
-                            }
-
-                            Text(
-                                text = video.snippet.title,
-                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-
-                            Text(
-                                text = video.snippet.description,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier
-                                    .padding(bottom = 8.dp)
-                                    .fillMaxWidth(),
-                                maxLines = 99999999,
-                                overflow = TextOverflow.Ellipsis
-                            )
-
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Default.ThumbUp,
-                                        contentDescription = "Likes",
-                                        tint = Color.Gray,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(text = "${video.statistics?.likeCount ?: 0} Likes")
-                                }
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Default.Visibility,
-                                        contentDescription = "Views",
-                                        tint = Color.Gray,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(text = "${video.statistics?.viewCount ?: 0} Views")
-                                }
-                            }
-                        }
-                    }
-
-                    Text(
-                        text = "Komentar",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                    if (isLoadingComments) {
-                        CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-                    } else if (errorComments != null) {
-                        Text(
-                            text = errorComments ?: "Error fetching comments",
-                            color = Color.Red,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    } else {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            comments.take(10).forEach { comment ->
-                                CommentItem(
-                                    userName = comment.snippet.authorDisplayName,
-                                    comment = comment.snippet.textDisplay,
-                                    profileImageUrl = comment.snippet.authorProfileImageUrl
-                                )
-                                KidCareDivider(modifier = Modifier.padding(vertical = 4.dp))
-                            }
-                        }
-                    }
-
-//                    Text(
-//                        text = "Video Terkait",
-//                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-//                        modifier = Modifier.padding(vertical = 8.dp)
-//                    )
-//                    if (isLoadingRelated) {
-//                        CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-//                    } else if (errorRelated != null) {
-//                        Text(
-//                            text = errorRelated ?: "Error fetching related videos",
-//                            color = Color.Red,
-//                            modifier = Modifier.padding(16.dp)
-//                        )
-//                    } else {
-//                        LazyRow(
-//                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-//                            modifier = Modifier.fillMaxWidth()
-//                        ) {
-//                            items(relatedVideos.take(10)) { relatedVideo -> // Limit to 10 videos
-//                                RelatedVideoItem(
-//                                    video = relatedVideo,
-//                                    onVideoClick = { /* Handle klik video terkait */ }
-//                                )
-//                            }
-//                        }
-//                    }
-                }
-            }
-
-            AnimatedVisibility(
-                visible = isFullscreen,
-                enter = fadeIn(animationSpec = tween(300)) + slideInVertically(initialOffsetY = { it }),
-                exit = fadeOut(animationSpec = tween(300)) + slideOutVertically(targetOffsetY = { it }),
-                modifier = Modifier.zIndex(2f)
-            ) {
-                FullscreenPlayer(
-                    videoId = video.id.videoId,
-                    onCloseFullscreen = { isFullscreen = false }
-                )
-            }
-        } ?: run {
+        if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = Color(0xFF0E5E6C))
+            }
+        } else if (errorMessage != null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = errorMessage ?: "Terjadi kesalahan", color = Color.Red, fontSize = 16.sp)
+            }
+        } else {
+            videoItem?.let { video ->
+                if (!isFullscreen) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    ) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(16 / 9f)
+                                    .padding(bottom = 16.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color.Black)
+                            ) {
+                                AndroidView(factory = { youTubePlayerView }, modifier = Modifier.fillMaxSize()) { playerView ->
+                                    playerView.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+                                        override fun onReady(youTubePlayer: YouTubePlayer) {
+                                            youTubePlayer.loadVideo(video.id.videoId, 0f)
+                                        }
+                                    })
+                                }
+
+                                IconButton(
+                                    onClick = { isFullscreen = true },
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .padding(8.dp)
+                                        .background(Color.Black.copy(alpha = 0.5f), shape = CircleShape)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Fullscreen,
+                                        contentDescription = "Fullscreen",
+                                        tint = Color.White
+                                    )
+                                }
+                            }
+
+                            KidCareCard(
+                                modifier = Modifier
+                                    .padding(bottom = 16.dp)
+                                    .fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    ) {
+                                        if (isLoadingChannel) {
+                                            // Placeholder saat memuat
+                                            Icon(
+                                                imageVector = Icons.Default.AccountCircle,
+                                                contentDescription = "User Avatar",
+                                                modifier = Modifier
+                                                    .size(40.dp)
+                                                    .clip(CircleShape)
+                                                    .background(Color.Gray.copy(alpha = 0.2f))
+                                                    .padding(4.dp),
+                                                tint = Color.Gray
+                                            )
+                                        } else if (errorChannel != null) {
+                                            Icon(
+                                                imageVector = Icons.Default.AccountCircle,
+                                                contentDescription = "User Avatar",
+                                                modifier = Modifier
+                                                    .size(40.dp)
+                                                    .clip(CircleShape)
+                                                    .background(Color.Gray.copy(alpha = 0.2f))
+                                                    .padding(4.dp),
+                                                tint = Color.Gray
+                                            )
+                                        } else {
+                                            Image(
+                                                painter = rememberAsyncImagePainter(
+                                                    model = ImageRequest.Builder(context)
+                                                        .data(channelAvatarUrl)
+                                                        .crossfade(true)
+                                                        .placeholder(R.drawable.ic_account_circle)
+                                                        .error(R.drawable.ic_account_circle)
+                                                        .build(),
+                                                ),
+                                                contentDescription = "User Avatar",
+                                                modifier = Modifier
+                                                    .size(40.dp)
+                                                    .clip(CircleShape)
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = video.snippet.channelTitle,
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                        )
+                                    }
+
+                                    Text(
+                                        text = video.snippet.title,
+                                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+
+                                    Text(
+                                        text = video.snippet.description,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier
+                                            .padding(bottom = 8.dp)
+                                            .fillMaxWidth(),
+                                        maxLines = Int.MAX_VALUE,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+
+                                    Row(
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Default.ThumbUp,
+                                                contentDescription = "Likes",
+                                                tint = Color.Gray,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(text = "${video.statistics?.likeCount ?: 0} Likes")
+                                        }
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Default.Visibility,
+                                                contentDescription = "Views",
+                                                tint = Color.Gray,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(text = "${video.statistics?.viewCount ?: 0} Views")
+                                        }
+                                    }
+                                }
+                            }
+
+                            Text(
+                                text = "Komentar",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                            if (isLoadingComments) {
+                                CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                            } else if (errorComments != null) {
+                                Text(
+                                    text = errorComments ?: "Error fetching comments",
+                                    color = Color.Red,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            } else {
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    comments.take(10).forEach { comment ->
+                                        CommentItem(
+                                            userName = comment.snippet.authorDisplayName,
+                                            comment = comment.snippet.textDisplay,
+                                            profileImageUrl = comment.snippet.authorProfileImageUrl
+                                        )
+                                        KidCareDivider(modifier = Modifier.padding(vertical = 4.dp))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (isFullscreen) {
+                    FullscreenPlayer(
+                        onCloseFullscreen = { isFullscreen = false },
+                        youTubePlayerView = youTubePlayerView
+                    )
+                }
+            } ?: run {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
         }
     }
+}
+
+private fun fetchVideoDetails(
+    videoId: String,
+    apiKey: String,
+    onResult: (VideoItem?, String?) -> Unit
+) {
+    ApiClient.api.getVideoDetails(
+        id = videoId,
+        apiKey = apiKey
+    ).enqueue(object : Callback<VideoDetailsResponse> {
+        override fun onResponse(call: Call<VideoDetailsResponse>, response: Response<VideoDetailsResponse>) {
+            if (response.isSuccessful) {
+                val videoDetailItem = response.body()?.items?.firstOrNull()
+                if (videoDetailItem != null) {
+                    val videoItem = VideoItem(
+                        id = VideoId(videoDetailItem.id),
+                        snippet = videoDetailItem.snippet,
+                        statistics = videoDetailItem.statistics,
+                        videoUrl = null // Anda bisa menyesuaikan jika ada URL video
+                    )
+                    onResult(videoItem, null)
+                } else {
+                    onResult(null, "Video tidak ditemukan")
+                }
+            } else {
+                onResult(null, "API Error: ${response.message()}")
+            }
+        }
+
+        override fun onFailure(call: Call<VideoDetailsResponse>, t: Throwable) {
+            onResult(null, "Gagal mengambil detail video: ${t.message}")
+        }
+    })
 }
 
 private fun fetchComments(
@@ -394,14 +417,15 @@ fun CommentItem(userName: String, comment: String, profileImageUrl: String) {
             .padding(vertical = 8.dp)
     ) {
 
+        val context = LocalContext.current
         Image(
-            painter = rememberImagePainter(
-                data = profileImageUrl,
-                builder = {
-                    crossfade(true)
-                    placeholder(R.drawable.ic_account_circle)
-                    error(R.drawable.ic_account_circle)
-                }
+            painter = rememberAsyncImagePainter(
+                model = ImageRequest.Builder(context)
+                    .data(profileImageUrl)
+                    .crossfade(true)
+                    .placeholder(R.drawable.ic_account_circle)
+                    .error(R.drawable.ic_account_circle)
+                    .build(),
             ),
             contentDescription = "User Avatar",
             modifier = Modifier
@@ -418,7 +442,7 @@ fun CommentItem(userName: String, comment: String, profileImageUrl: String) {
             Text(
                 text = comment,
                 style = MaterialTheme.typography.bodySmall,
-                maxLines = 9999,
+                maxLines = Int.MAX_VALUE,
                 overflow = TextOverflow.Ellipsis
             )
         }
@@ -428,34 +452,23 @@ fun CommentItem(userName: String, comment: String, profileImageUrl: String) {
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun FullscreenPlayer(
-    videoId: String,
-    onCloseFullscreen: () -> Unit
+    onCloseFullscreen: () -> Unit,
+    youTubePlayerView: YouTubePlayerView
 ) {
-    val context = LocalContext.current
 
-    BoxWithConstraints(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .zIndex(0f)
+            .zIndex(2f)
     ) {
-        val screenWidth = maxWidth
-        val screenHeight = maxHeight
-
-        AndroidView(factory = {
-            YouTubePlayerView(context).apply {
-                // Optional: Kustomisasi player view jika diperlukan
-            }
-        }, modifier = Modifier
-            .width(screenWidth)
-            .height(screenHeight)
+        AndroidView(
+            factory = { youTubePlayerView },
+            modifier = Modifier
+                .aspectRatio(16 / 9f)
+                .align(Alignment.Center)
         ) { playerView ->
-            playerView.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
-                override fun onReady(youTubePlayer: YouTubePlayer) {
-                    youTubePlayer.loadVideo(videoId, 0f)
-                    youTubePlayer.play()
-                }
-            })
+            // Listener sudah ditambahkan di VideoDetailScreen, tidak perlu ditambahkan lagi
         }
 
         IconButton(

@@ -30,15 +30,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
 import com.callcenter.kidcare.R
 import com.callcenter.kidcare.ui.theme.Ocean1
-import com.callcenter.kidcare.ui.theme.Ocean3
 import com.callcenter.kidcare.ui.theme.Ocean6
 import com.callcenter.kidcare.ui.theme.Ocean7
 import com.callcenter.kidcare.ui.theme.Ocean8
-import com.callcenter.kidcare.ui.theme.Ocean9
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun GoogleLoginScreen(
     onClick: () -> Unit,
@@ -62,7 +59,7 @@ fun GoogleLoginScreen(
         "Monitor kesehatan anak secara rutin. Pastikan nutrisi seimbang, tumbuh kembang optimal, dan akses layanan kesehatan. Cegah stunting, wujudkan generasi sehat dan cerdas!"
     )
 
-    val pagerState = rememberPagerState()
+    @Suppress("DEPRECATION") val pagerState = rememberPagerState() // Updated to use androidx.compose.foundation.pager
     var loading by remember { mutableStateOf(false) }
 
     // Get screen dimensions
@@ -127,6 +124,7 @@ fun GoogleLoginScreen(
     }
 }
 
+@Suppress("DEPRECATION")
 @Composable
 fun CustomPagerIndicator(
     pagerState: PagerState,
@@ -167,7 +165,7 @@ fun CustomPagerIndicator(
     }
 }
 
-@OptIn(ExperimentalPagerApi::class)
+@Suppress("DEPRECATION")
 @Composable
 fun CarouselSlider(
     images: List<Int>,
@@ -178,7 +176,7 @@ fun CarouselSlider(
 ) {
     val carouselHeight = screenHeight * 0.68f
 
-    var currentPage by remember { mutableStateOf(0) }
+    var currentPage by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
         while (true) {

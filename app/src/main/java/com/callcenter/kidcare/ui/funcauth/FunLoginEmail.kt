@@ -1,9 +1,13 @@
 package com.callcenter.kidcare.ui.funcauth
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,21 +23,18 @@ class FunLoginEmail : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
-    // UI State
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState
 
-    // Generate Random Verification Code
     private fun generateRandomCode(): String {
         return Random.nextInt(100000, 999999).toString()
     }
 
-    // Send Email Function
     private fun sendEmail(receiverEmail: String, verificationCode: String) {
         viewModelScope.launch {
             try {
                 val senderEmail = "kidcarex@gmail.com"
-                val senderPassword = "mmgvsuyxhqsoxxtc" // **Penting:** Simpan kredensial dengan aman!
+                val senderPassword = "mmgvsuyxhqsoxxtc" // **Important:** Store credentials securely!
                 val host = "smtp.gmail.com"
 
                 val properties: Properties = System.getProperties().apply {
@@ -67,14 +68,13 @@ class FunLoginEmail : ViewModel() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 _uiState.value = _uiState.value.copy(
-                    dialogMessage = "Gagal mengirim email: ${e.message}",
+                    dialogMessage = "Failed to send email: ${e.message}",
                     dialogVisible = true
                 )
             }
         }
     }
 
-    // Save Verification Code to Firestore
     private fun saveVerificationCode(code: String, email: String) {
         val timestamp = System.currentTimeMillis()
         val codeData = hashMapOf(
@@ -89,21 +89,20 @@ class FunLoginEmail : ViewModel() {
             .addOnSuccessListener {
                 sendEmail(email, code)
                 _uiState.value = _uiState.value.copy(
-                    dialogMessage = "Kode verifikasi telah dikirim ke email Anda.",
+                    dialogMessage = "Verification code has been sent to your email.",
                     dialogVisible = true
                 )
             }
             .addOnFailureListener { e ->
                 _uiState.value = _uiState.value.copy(
-                    dialogMessage = "Error menyimpan kode verifikasi: ${e.message}",
+                    dialogMessage = "Error saving verification code: ${e.message}",
                     dialogVisible = true
                 )
             }
     }
 
-    // Validate Verification Code
     fun validateVerificationCode(inputCode: String, email: String, password: String) {
-        _uiState.value = _uiState.value.copy(loadingVerification = true) // Mulai loading verifikasi
+        _uiState.value = _uiState.value.copy(loadingVerification = true)
 
         firestore.collection("verificationCodes")
             .document(email)
@@ -113,60 +112,100 @@ class FunLoginEmail : ViewModel() {
                     val savedCode = document.getString("verificationCode")
                     val savedTimestamp = document.getLong("timestamp") ?: 0
                     val currentTime = System.currentTimeMillis()
-                    val expirationTime = 5 * 60 * 1000 // 5 menit
+                    val expirationTime = 5 * 60 * 1000 // 5 minutes
 
                     if (inputCode == savedCode && (currentTime - savedTimestamp) < expirationTime) {
                         firestore.collection("verificationCodes").document(email).delete()
                         auth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
+                                    val user = auth.currentUser
+                                    user?.let {
+                                        assignUserRole(it)
+                                    }
                                     _uiState.value = _uiState.value.copy(
                                         navigateToHome = true,
                                         loadingVerification = false
                                     )
                                 } else {
                                     _uiState.value = _uiState.value.copy(
-                                        verificationError = "Login gagal: ${task.exception?.message}",
+                                        verificationError = "Login failed: ${task.exception?.message}",
                                         loadingVerification = false
                                     )
                                 }
                             }
                     } else {
                         _uiState.value = _uiState.value.copy(
-                            verificationError = "Kode verifikasi tidak valid atau sudah kadaluarsa.",
+                            verificationError = "Invalid or expired verification code.",
                             loadingVerification = false
                         )
                     }
                 } else {
                     _uiState.value = _uiState.value.copy(
-                        verificationError = "Kode verifikasi tidak ditemukan.",
+                        verificationError = "Verification code not found.",
                         loadingVerification = false
                     )
                 }
             }
             .addOnFailureListener {
                 _uiState.value = _uiState.value.copy(
-                    verificationError = "Gagal memvalidasi kode verifikasi.",
+                    verificationError = "Failed to validate verification code.",
                     loadingVerification = false
                 )
+            }
+    }
+
+    // Assign User Role and Store Data in Firestore
+    private fun assignUserRole(user: FirebaseUser) {
+        val adminEmails = listOf(
+            "akunstoragex@gmail.com",
+            "cerberus404x@gmail.com",
+            "kidcarex@gmail.com",
+            "kennyjosiahresa@gmail.com"
+        )
+
+        val userEmail = user.email
+        val userProfilePicUrl = user.photoUrl?.toString()
+        val username = user.displayName ?: userEmail?.substringBefore("@") ?: "Unknown"
+        val userUuid = user.uid
+
+        val role = if (userEmail in adminEmails) "admin" else "user"
+
+        val userData = mapOf(
+            "uuid" to userUuid,
+            "email" to userEmail,
+            "role" to role,
+            "username" to username,
+            "profilePic" to userProfilePicUrl,
+            "timestamp" to FieldValue.serverTimestamp()
+        )
+
+        firestore.collection("users")
+            .document(user.uid)
+            .set(userData, SetOptions.merge())
+            .addOnSuccessListener {
+                Log.d("FunLoginEmail", "$role role assigned to $userEmail")
+            }
+            .addOnFailureListener { e ->
+                Log.e("FunLoginEmail", "Error assigning $role role", e)
             }
     }
 
     // Handle Login Button Click
     fun onLoginClick(email: String, password: String) {
         if (password.length >= 8) {
-            _uiState.value = _uiState.value.copy(loading = true) // Mulai loading
+            _uiState.value = _uiState.value.copy(loading = true)
             val verificationCode = generateRandomCode()
             saveVerificationCode(verificationCode, email)
             _uiState.value = _uiState.value.copy(
-                loading = false, // Hentikan loading setelah mengirim kode
+                loading = false,
                 verificationDialogVisible = true
             )
         } else {
             _uiState.value = _uiState.value.copy(
-                dialogMessage = "Silakan masukkan password yang valid.",
+                dialogMessage = "Please enter a valid password.",
                 dialogVisible = true,
-                loading = false // Hentikan loading jika ada error
+                loading = false
             )
         }
     }

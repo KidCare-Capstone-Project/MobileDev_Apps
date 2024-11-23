@@ -49,6 +49,7 @@ import com.callcenter.kidcare.ui.home.DestinationBar
 import com.callcenter.kidcare.ui.home.HomeSections
 import com.callcenter.kidcare.ui.home.KidCareBottomBar
 import com.callcenter.kidcare.ui.home.addHomeGraph
+import com.callcenter.kidcare.ui.home.childprofile.AddChildProfileScreen
 import com.callcenter.kidcare.ui.home.composableWithCompositionLocal
 import com.callcenter.kidcare.ui.navigation.MainDestinations
 import com.callcenter.kidcare.ui.navigation.rememberKidCareNavController
@@ -159,15 +160,23 @@ fun MainContainer(
                         modifier = Modifier.weight(1f)
                     ) {
                         addHomeGraph(
+                            navController = navController,
+
                             modifier = Modifier
                                 .padding(padding)
                                 .consumeWindowInsets(padding)
                         )
                         composable(MainDestinations.YOUTUBE_HEALTH_ROUTE) { backStackEntry ->
-                            YouTubeHealth(onClose = { navController.navigateUp() })
+                            YouTubeHealth(
+                                onClose = { navController.navigateUp() },
+                                navController = navController
+                            )
                         }
                         composable(MainDestinations.AI_INTERACTION_ROUTE) { backStackEntry ->
                             AIInteraction(onClose = { navController.navigateUp() })
+                        }
+                        composable(MainDestinations.ADD_CHILD_PROFILE_ROUTE) {
+                            AddChildProfileScreen(navController = navController)
                         }
                     }
                 }

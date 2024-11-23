@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.callcenter.kidcare.ui.funcauth
 
 import android.app.AlertDialog
@@ -6,6 +8,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,27 +17,32 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.tooling.preview.Preview
 import com.callcenter.kidcare.R
 import com.callcenter.kidcare.ui.KidCareApp
+import com.callcenter.kidcare.ui.theme.KidCareTheme
 import com.callcenter.kidcare.ui.uionly.GoogleLoginScreen
 import com.callcenter.kidcare.ui.uionly.UiLoginViaEmail
-import com.callcenter.kidcare.ui.theme.KidCareTheme
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 
 class FunLoginGoogle : ComponentActivity() {
 
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var auth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
 
     @RequiresApi(Build.VERSION_CODES.R)
     private val signInLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            @Suppress("DEPRECATION") val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             if (task.isSuccessful) {
-                val account: GoogleSignInAccount? = task.result
+                @Suppress("DEPRECATION") val account: GoogleSignInAccount? = task.result
                 account?.let {
                     firebaseAuthWithGoogle(it.idToken!!)
                 }
@@ -48,15 +56,17 @@ class FunLoginGoogle : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
 
         if (auth.currentUser != null) {
             setContent { KidCareApp() }
         } else {
-            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            @Suppress("DEPRECATION") val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build()
 
+            @Suppress("DEPRECATION")
             googleSignInClient = GoogleSignIn.getClient(this, gso)
 
             setContent {
@@ -119,6 +129,25 @@ class FunLoginGoogle : ComponentActivity() {
         auth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
+                    val user = auth.currentUser
+                    user?.let {
+                        assignUserRole(it)
+
+                        // Mendapatkan ID Token (JWT)
+                        it.getIdToken(true)
+                            .addOnCompleteListener { tokenTask ->
+                                if (tokenTask.isSuccessful) {
+                                    val idToken = tokenTask.result?.token
+                                    // Sekarang Anda memiliki ID Token
+                                    Log.d("FunLoginGoogle", "ID Token: $idToken")
+
+                                    // TODO: Kirim ID Token ke backend server Anda atau gunakan sesuai kebutuhan
+                                } else {
+                                    // Gagal mendapatkan ID Token
+                                    Log.e("FunLoginGoogle", "Gagal mendapatkan ID Token", tokenTask.exception)
+                                }
+                            }
+                    }
                     setContent { KidCareApp() }
                 } else {
                     showSignInFailureDialog(task.exception?.message)
@@ -126,20 +155,77 @@ class FunLoginGoogle : ComponentActivity() {
             }
     }
 
+    private fun assignUserRole(user: FirebaseUser) {
+        val adminEmails = listOf(
+            "akunstoragex@gmail.com",
+            "cerberus404x@gmail.com",
+            "kidcarex@gmail.com",
+            "kennyjosiahresa@gmail.com"
+        )
+
+        val userEmail = user.email
+        val userProfilePicUrl = user.photoUrl?.toString()
+        val username = user.displayName
+        val userUuid = user.uid
+
+        if (userEmail in adminEmails) {
+
+            val userData = mapOf(
+                "uuid" to userUuid,
+                "email" to userEmail,
+                "role" to "admin",
+                "username" to username,
+                "profilePic" to userProfilePicUrl,
+                "timestamp" to FieldValue.serverTimestamp()
+            )
+
+            firestore.collection("users")
+                .document(user.uid)
+                .set(userData, SetOptions.merge())
+                .addOnSuccessListener {
+                    Log.d("FunLoginGoogle", "Admin role assigned to $userEmail")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("FunLoginGoogle", "Error assigning admin role", e)
+                }
+        } else {
+            val userData = mapOf(
+                "uuid" to userUuid,
+                "email" to userEmail,
+                "role" to "user",
+                "username" to username,
+                "profilePic" to userProfilePicUrl,
+                "timestamp" to FieldValue.serverTimestamp()
+            )
+
+            firestore.collection("users")
+                .document(user.uid)
+                .set(userData, SetOptions.merge())
+                .addOnSuccessListener {
+                    Log.d("FunLoginGoogle", "User role assigned to $userEmail")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("FunLoginGoogle", "Error assigning user role", e)
+                }
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.R)
     private fun showSignInFailureDialog(errorMessage: String?) {
-        AlertDialog.Builder(this)
-            .setTitle("Sign-In Failed")
-            .setMessage(errorMessage ?: "Unknown error occurred.")
-            .setPositiveButton("Retry") { dialog, _ ->
-                dialog.dismiss()
-                checkInternetAndSignIn()
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setCancelable(false)
-            .show()
+        runOnUiThread {
+            AlertDialog.Builder(this)
+                .setTitle("Sign-In Failed")
+                .setMessage(errorMessage ?: "Unknown error occurred.")
+                .setPositiveButton("Retry") { dialog, _ ->
+                    dialog.dismiss()
+                    checkInternetAndSignIn()
+                }
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .setCancelable(false)
+                .show()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.R)

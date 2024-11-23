@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -143,6 +144,7 @@ fun UiRegister() {
                         }
                     }
                 ) {
+                    @Suppress("DEPRECATION")
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back to Google Login",
@@ -232,7 +234,11 @@ fun UiRegister() {
                             focusedIndicatorColor = Ocean8,
                             unfocusedIndicatorColor = Ocean6,
                             cursorColor = Ocean8,
-                            errorIndicatorColor = FunctionalRed
+                            errorIndicatorColor = FunctionalRed,
+                            selectionColors = TextSelectionColors(
+                                handleColor = Ocean8,
+                                backgroundColor = Ocean8.copy(alpha = 0.4f)
+                            )
                         )
                     )
 
@@ -273,7 +279,11 @@ fun UiRegister() {
                             focusedIndicatorColor = Ocean8,
                             unfocusedIndicatorColor = Ocean6,
                             cursorColor = Ocean8,
-                            errorIndicatorColor = FunctionalRed
+                            errorIndicatorColor = FunctionalRed,
+                            selectionColors = TextSelectionColors(
+                                handleColor = Ocean8,
+                                backgroundColor = Ocean8.copy(alpha = 0.4f)
+                            )
                         )
                     )
 
@@ -330,7 +340,11 @@ fun UiRegister() {
                             focusedIndicatorColor = Ocean8,
                             unfocusedIndicatorColor = Ocean6,
                             cursorColor = Ocean8,
-                            errorIndicatorColor = FunctionalRed
+                            errorIndicatorColor = FunctionalRed,
+                            selectionColors = TextSelectionColors(
+                                handleColor = Ocean8,
+                                backgroundColor = Ocean8.copy(alpha = 0.4f)
+                            )
                         )
                     )
 

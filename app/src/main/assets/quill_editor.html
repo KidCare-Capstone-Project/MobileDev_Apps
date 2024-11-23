@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Quill Editor</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/2.0.2/quill.snow.css" rel="stylesheet">
+</head>
+    <body>
+        <div id="toolbar">
+            <span class="ql-formats">
+                <button class="ql-bold"></button>
+                <button class="ql-italic"></button>
+                <button class="ql-underline"></button>
+                <button class="ql-strike"></button>
+            </span>
+
+            <span class="ql-formats">
+                <select class="ql-align">
+                    <option selected></option>
+                    <option value="center"></option>
+                    <option value="right"></option>
+                    <option value="justify"></option>
+                </select>
+            </span>
+
+            <span class="ql-formats">
+                <button class="ql-list" value="ordered"></button>
+                <button class="ql-list" value="bullet"></button>
+                <button class="ql-indent" value="-1"></button>
+                <button class="ql-indent" value="+1"></button>
+            </span>
+
+            <span class="ql-formats">
+                <button class="ql-image"></button>
+            </span>
+        </div>
+
+        <div id="editor-container"></div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/2.0.2/quill.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
+        <script>
+            var quill = new Quill('#editor-container', {
+                modules: {
+                    toolbar: {
+                        container: '#toolbar',
+                        handlers: {
+                            'image': function() {
+                                if (window.Android) {
+                                    window.Android.pickImage();
+                                }
+                            }
+                        }
+                    },
+                    imageResize: {
+                        modules: [ 'Resize', 'DisplaySize', 'Toolbar' ]
+                    }
+                },
+                theme: 'snow'
+            });
+
+            function insertImage(url) {
+                var range = quill.getSelection();
+                quill.insertEmbed(range.index, 'image', url, 'user');
+                // Optional: set default size
+                setTimeout(function() {
+                    var img = quill.root.querySelector('img[src="' + url + '"]');
+                    if (img) {
+                        img.setAttribute('width', '300px');
+                    }
+                }, 100);
+            }
+
+            function getContent() {
+                var content = quill.root.innerHTML;
+                Android.receiveContent(content);
+            }
+        </script>
+    </body>
+</html>

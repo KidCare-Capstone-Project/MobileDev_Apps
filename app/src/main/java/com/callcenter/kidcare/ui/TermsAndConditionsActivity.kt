@@ -19,9 +19,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 
 class TermsAndConditionsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,6 +68,7 @@ fun TermsAndConditionsScreen(onBackPressed: () -> Unit) {
                             }
                         }
                     ) {
+                        @Suppress("DEPRECATION")
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
@@ -114,7 +115,7 @@ fun TermsAndConditionsScreen(onBackPressed: () -> Unit) {
                         textAlign = TextAlign.Justify
                     )
 
-                    Divider(
+                    HorizontalDivider(
                         color = MaterialTheme.colorScheme.primary,
                         thickness = 1.dp,
                         modifier = Modifier.padding(bottom = 24.dp)

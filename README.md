@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img align="center" src="./assets/github/KidCare%20-%20Capstone.gif" width="500"></img>
+  <img align="center" src="./assets/github/KidCare%20-%20Capstone.gif" width="500">
 <br>
 KID CARE MOBILE DEVELOPMENT README
 </h1>
@@ -53,23 +53,19 @@ The KID CARE application is developed with Android technology to provide wide ac
 
 - Retrofit and OkHttp for reliable API integration in retrieving nutritional and health information data.
 
-- Camera to allow users to upload photos of their child's development and compare them with standard growth data.
+- Camera to allow users to upload photos to ai generative gemini to ask for specifications.
 
-**Case:**
+**Case:** In its implementation, the KID CARE application helps health workers and parents in overcoming stunting problems. For example, a mother in a remote area can use this application to monitor her child's weight and height development. Based on the inputted data, the application will provide a warning if there are indications of stunting in children and provide recommendations for appropriate diet and nutrition patterns.
 
-In its implementation, the KID CARE application helps health workers and parents in overcoming the problem of stunting. For example, a mother in a remote area can use this application to monitor the development of her child's weight and height. Based on the inputted data, the application will provide a warning if there are indications of stunting in the child and provide recommendations for appropriate diet and nutrition patterns.
-
-The team will focus on developing and testing the following features:
-
-- Growth Monitoring and Analysis: Routinely monitor children's height, weight, and head circumference and compare them with WHO standard data.
+The team will focus on developing and testing the following features: - Growth Monitoring and Analysis: Monitor children's height, weight, and head circumference regularly and compare them with existing data.
 
 - Nutrition and Health Education: Provide educational content for parents about the importance of balanced nutrition and child health care.
 
 - Notifications and Reminders: Provide reminders for routine health checks and vaccinations according to the child's age.
 
-- Data Visualization: Displays child development graphs in an easy-to-understand manner, making it easier to monitor.
+- Data Visualization: Displays child development graphs in an easy-to-understand way, making it easier to monitor.
 
-- This application is expected to be an innovative solution that can help the government and society in reducing stunting rates and supporting the creation of a healthy and intelligent generation in Indonesia.
+- This application is expected to be an innovative solution that can help the government and society in reducing stunting rates and supporting the creation of a healthy and intelligent generation of Indonesia.
 
 ## Screenshots
 <p align="center">
@@ -89,30 +85,45 @@ The team will focus on developing and testing the following features:
 </p>
 
 ## Development Roadmap
-- [x] [Kotlin](https://kotlinlang.org/)
-- [x] [Firebbase Database](https://firebase.google.com/docs/database/android/start)
-- [x] [Firebbase Firestore](https://firebase.google.com/docs/firestore)
-- [x] [Androidx Compose Bom](https://mvnrepository.com/artifact/androidx.compose/compose-bom)
-- [x] [Kotlin coroutines](https://developer.android.com/kotlin/coroutines)
-- [x] [Core KTX](https://developer.android.com/kotlin/ktx#kts)
-- [x] [Lifecycle](https://developer.android.com/jetpack/androidx/releases/lifecycle)
-- [x] [Constraintlayout](https://developer.android.com/jetpack/androidx/releases/constraintlayout)
-- [x] [Compose Material 3](https://developer.android.com/jetpack/androidx/releases/compose-material3)
-- [x] [Compose Material Icon](https://developer.android.com/reference/kotlin/androidx/compose/material/icons/package-summary)
-- [x] [Tools for Compose](https://developer.android.com/develop/ui/compose/tooling)
-- [x] [Coil Compose](https://coil-kt.github.io/coil/compose/)
-- [x] [Retrofit](https://square.github.io/retrofit/)
-- [x] [Play services Auth](https://developers.google.com/android/guides/setup)
-- [x] [OkHttp](https://square.github.io/okhttp/)
-- [x] [Generative Ai Gemini API](https://ai.google.dev/gemini-api/docs/get-started/tutorial?lang=android&hl=id)
-- [x] [JavaMail](https://javaee.github.io/javamail/Android)
-- [x] [Coil Gif](https://github.com/coil-kt/coil)
-- [x] [Android Youtube Player](https://github.com/PierfrancescoSoffritti/android-youtube-player)
-- [x] [preferences](https://developer.android.com/reference/android/preference/Preference)
-- [x] [Navigation Component](https://developer.android.com/guide/navigation/navigation-getting-started)
+- [✓] [Kotlin](https://kotlinlang.org/)
+- [✓] [Firebbase Database](https://firebase.google.com/docs/database/android/start)
+- [✓] [Firebbase Firestore](https://firebase.google.com/docs/firestore)
+- [✓] [Androidx Compose Bom](https://mvnrepository.com/artifact/androidx.compose/compose-bom)
+- [✓] [Kotlin coroutines](https://developer.android.com/kotlin/coroutines)
+- [✓] [Core KTX](https://developer.android.com/kotlin/ktx#kts)
+- [✓] [Lifecycle](https://developer.android.com/jetpack/androidx/releases/lifecycle)
+- [✓] [Constraintlayout](https://developer.android.com/jetpack/androidx/releases/constraintlayout)
+- [✓] [Compose Material 3](https://developer.android.com/jetpack/androidx/releases/compose-material3)
+- [✓] [Compose Material Icon](https://developer.android.com/reference/kotlin/androidx/compose/material/icons/package-summary)
+- [✓] [Tools for Compose](https://developer.android.com/develop/ui/compose/tooling)
+- [✓] [Coil Compose](https://coil-kt.github.io/coil/compose/)
+- [✓] [Retrofit](https://square.github.io/retrofit/)
+- [✓] [Play services Auth](https://developers.google.com/android/guides/setup)
+- [✓] [OkHttp](https://square.github.io/okhttp/)
+- [✓] [Generative Ai Gemini API](https://ai.google.dev/gemini-api/docs/get-started/tutorial?lang=android&hl=id)
+- [✓] [JavaMail](https://javaee.github.io/javamail/Android)
+- [✓] [Coil Gif](https://github.com/coil-kt/coil)
+- [✓] [Android Youtube Player](https://github.com/PierfrancescoSoffritti/android-youtube-player)
+- [✓] [preferences](https://developer.android.com/reference/android/preference/Preference)
+- [✓] [Navigation Component](https://developer.android.com/guide/navigation/navigation-getting-started)
 
 ## Features
-- [x] Welcoming Activity
+- [✓] Splash Screen
+- [✓] Login Option Google Or Email
+- [✓] Login Email Screen
+- [✓] Register Screen
+- [✓] Forgot Password Screen
+- [✓] Terms & Conditions Screen
+- [✓] Verification Email Screen
+- [✓] Dialog Message Error/Success, Welcome
+- [✓] Destination Bar, Bottom Nav
+- [✓] Home Screen
+- [✓] Favorite Screen
+- [✓] Profile Screen
+- [✓] Can Logout From Profile
+- [✓] Can See About Us in Profile
+- [✓] Option Panel Generative AI & YouTube Health News For Kid Stunting
+- [✓] Ping Sginal Realtime & Realtime Clock Digital
 
 ## Requirement
 * Android Studio LadyBug

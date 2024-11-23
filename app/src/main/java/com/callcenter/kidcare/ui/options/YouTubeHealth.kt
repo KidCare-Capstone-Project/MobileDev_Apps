@@ -1,5 +1,6 @@
 package com.callcenter.kidcare.ui.options
 
+//noinspection UsingMaterialAndMaterial3Libraries
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
@@ -8,14 +9,22 @@ import android.os.Build
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.TextSelectionColors
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.RemoveRedEye
@@ -26,6 +35,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -35,7 +45,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberImagePainter
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.callcenter.kidcare.R
 import com.callcenter.kidcare.data.ApiClient
 import com.callcenter.kidcare.data.VideoDetailsResponse
@@ -43,16 +56,16 @@ import com.callcenter.kidcare.data.VideoItem
 import com.callcenter.kidcare.data.VideoResponse
 import com.callcenter.kidcare.ui.components.KidCareCard
 import com.callcenter.kidcare.ui.components.YouTubeAppBar
-import com.callcenter.kidcare.ui.options.videoDetail.VideoDetailScreen
+import com.callcenter.kidcare.ui.theme.DarkText
 import com.callcenter.kidcare.ui.theme.KidCareTheme
-import com.callcenter.kidcare.ui.theme.KidCareTheme.colors
+import com.callcenter.kidcare.ui.theme.WhiteColor
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
-fun YouTubeHealth(onClose: () -> Unit) {
+fun YouTubeHealth(onClose: () -> Unit, navController: NavHostController) {
     var videos by remember { mutableStateOf<List<VideoItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -60,19 +73,13 @@ fun YouTubeHealth(onClose: () -> Unit) {
     val apiKey = context.getString(R.string.youtube_api_key)
     var searchQuery by remember { mutableStateOf("") }
     var showSearchInput by remember { mutableStateOf(false) }
-    var selectedVideoId by remember { mutableStateOf<String?>(null) }
 
     fun isInternetAvailable(context: Context): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val networkCapabilities = connectivityManager.activeNetwork?.let {
-                connectivityManager.getNetworkCapabilities(it)
-            }
-            return networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
-        } else {
-            val activeNetworkInfo = connectivityManager.activeNetworkInfo
-            return activeNetworkInfo?.isConnected == true
+        val networkCapabilities = connectivityManager.activeNetwork?.let {
+            connectivityManager.getNetworkCapabilities(it)
         }
+        return networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
     }
 
     val onSearchClick: () -> Unit = {
@@ -113,31 +120,29 @@ fun YouTubeHealth(onClose: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.uiBackground)
+            .background(KidCareTheme.colors.uiBackground)
     ) {
-        if (selectedVideoId == null) {
-            YouTubeAppBar(
-                onClose = {
-                    onClose()
-                },
-                onSearchClick = onSearchClick
-            )
-        }
+        YouTubeAppBar(
+            onClose = {
+                onClose()
+            },
+            onSearchClick = onSearchClick
+        )
 
         if (showSearchInput) {
             TextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                label = { Text("Search", color = colors.brand) },
+                label = { Text("Search", color = KidCareTheme.colors.brand) },
                 placeholder = {
-                    Text("Enter search term", color = colors.brandSecondary.copy(alpha = 0.5f))
+                    Text("Enter search term", color = KidCareTheme.colors.brandSecondary.copy(alpha = 0.5f))
                 },
                 trailingIcon = {
                     IconButton(onClick = { onSearchClick() }) {
                         Icon(
                             imageVector = Icons.Outlined.Search,
                             contentDescription = "Search",
-                            tint = colors.brand
+                            tint = KidCareTheme.colors.brand
                         )
                     }
                 },
@@ -145,12 +150,19 @@ fun YouTubeHealth(onClose: () -> Unit) {
                     imeAction = ImeAction.Search
                 ),
                 colors = TextFieldDefaults.colors(
-                    focusedTextColor = colors.brand,
-                    unfocusedTextColor = colors.brandSecondary,
-                    focusedContainerColor = colors.uiBackground,
-                    unfocusedContainerColor = colors.uiBorder,
+                    focusedTextColor = if (isSystemInDarkTheme()) WhiteColor else DarkText,
+                    unfocusedTextColor = if (isSystemInDarkTheme()) WhiteColor else DarkText,
+                    disabledTextColor = if (isSystemInDarkTheme()) WhiteColor else DarkText.copy(alpha = ContentAlpha.disabled),
+                    errorTextColor = MaterialTheme.colorScheme.error,
+                    cursorColor = if (isSystemInDarkTheme()) WhiteColor else DarkText,
+                    focusedContainerColor = KidCareTheme.colors.uiBackground,
+                    unfocusedContainerColor = KidCareTheme.colors.uiBorder,
                     focusedIndicatorColor = Color(0xFF0E5E6C),
-                    unfocusedIndicatorColor = Color.Transparent
+                    unfocusedIndicatorColor = Color.Transparent,
+                    selectionColors = TextSelectionColors(
+                        handleColor = if (isSystemInDarkTheme()) WhiteColor else DarkText,
+                        backgroundColor = if (isSystemInDarkTheme()) WhiteColor else DarkText.copy(alpha = 0.4f)
+                    )
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -159,21 +171,18 @@ fun YouTubeHealth(onClose: () -> Unit) {
             )
         }
 
-        if (selectedVideoId != null) {
-            val selectedVideo = videos.find { it.id.videoId == selectedVideoId }
-            selectedVideo?.let {
-                VideoDetailScreen(
-                    videoItem = it,
-                    onBack = { selectedVideoId = null }
-                )
-            }
-        } else {
-            Box(modifier = Modifier.fillMaxSize()) {
-                if (isLoading) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Color(0xFF0E5E6C))
+        Box(modifier = Modifier.fillMaxSize()) {
+            when {
+                isLoading -> {
+                    // Display a list of shimmer effects as placeholders
+                    LazyColumn {
+                        items(5) { // You can adjust the number of placeholders
+                            ShimmerVideoItem()
+                            Spacer(modifier = Modifier.height(6.dp))
+                        }
                     }
-                } else if (errorMessage != null) {
+                }
+                errorMessage != null -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
                             text = errorMessage ?: "An unknown error occurred",
@@ -182,11 +191,13 @@ fun YouTubeHealth(onClose: () -> Unit) {
                             modifier = Modifier.padding(16.dp)
                         )
                     }
-                } else {
+                }
+                else -> {
                     LazyColumn {
                         items(videos) { video ->
                             VideoItemRow(video) { videoId ->
-                                selectedVideoId = videoId
+                                // Navigation to VideoDetailScreen with videoId
+                                navController.navigate("videoDetail/$videoId")
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                         }
@@ -215,7 +226,7 @@ private fun fetchVideos(
                                 val details = response.body()?.items?.firstOrNull()
                                 details?.let {
                                     val updatedVideo = video.copy(statistics = it.statistics, snippet = it.snippet)
-                                    onResult(videoItems.map { if (it.id == video.id) updatedVideo else it }, null)
+                                    onResult(videoItems.map { if (it.id.videoId == video.id.videoId) updatedVideo else it }, null)
                                 }
                             }
                         }
@@ -238,8 +249,73 @@ private fun fetchVideos(
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
+fun ShimmerVideoItem() {
+
+    KidCareCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = 8.dp
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            ShimmerEffect(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Column(modifier = Modifier.padding(12.dp)) {
+                ShimmerEffect(modifier = Modifier.height(24.dp).fillMaxWidth())
+                Spacer(modifier = Modifier.height(4.dp))
+                ShimmerEffect(
+                    modifier = Modifier
+                        .height(24.dp)
+                        .fillMaxWidth()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ShimmerEffect(
+    modifier: Modifier = Modifier,
+    shimmerColor: Color = Color.LightGray.copy(alpha = 0.6f)
+) {
+    val transition = rememberInfiniteTransition()
+    val translateAnim by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1200, easing = LinearEasing)
+        )
+    )
+
+    Box(
+        modifier = modifier
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(
+                        shimmerColor.copy(alpha = 0.6f),
+                        shimmerColor.copy(alpha = 0.2f),
+                        shimmerColor.copy(alpha = 0.6f)
+                    ),
+                    start = Offset(translateAnim - 1000f, translateAnim - 1000f),
+                    end = Offset(translateAnim, translateAnim)
+                )
+            )
+    )
+}
+
+
+@SuppressLint("UnusedBoxWithConstraintsScope")
+@Composable
 fun VideoItemRow(video: VideoItem, onClick: (String) -> Unit) {
-    val colors = colors
+    val colors = KidCareTheme.colors
     val typography = MaterialTheme.typography
 
     KidCareCard(
@@ -258,22 +334,19 @@ fun VideoItemRow(video: VideoItem, onClick: (String) -> Unit) {
                     .fillMaxWidth()
                     .height(200.dp)
             ) {
-                Image(
-                    painter = rememberImagePainter(
-                        data = video.snippet.thumbnails.high.url,
-                        builder = {
-                            crossfade(true)
-                            placeholder(R.drawable.empty_state_search)
-                            error(R.drawable.empty_state_search)
-                        }
-                    ),
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(video.snippet.thumbnails.high.url)
+                        .crossfade(true)
+                        .placeholder(R.drawable.empty_state_search)
+                        .error(R.drawable.empty_state_search)
+                        .build(),
                     contentDescription = video.snippet.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                 )
-
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -327,7 +400,7 @@ fun VideoItemRow(video: VideoItem, onClick: (String) -> Unit) {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "${video.statistics?.likeCount ?: "0"}",
+                            text = video.statistics?.likeCount ?: "0",
                             color = colors.textPrimary,
                             style = typography.bodySmall
                         )
@@ -340,12 +413,11 @@ fun VideoItemRow(video: VideoItem, onClick: (String) -> Unit) {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "${video.statistics?.viewCount ?: "0"}",
+                            text = video.statistics?.viewCount ?: "0",
                             color = colors.textPrimary,
                             style = typography.bodySmall
                         )
                     }
-
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = "More Options",
@@ -363,6 +435,7 @@ fun VideoItemRow(video: VideoItem, onClick: (String) -> Unit) {
 @Composable
 fun PreviewYouTubeHealth() {
     KidCareTheme {
-        YouTubeHealth(onClose = { })
+        val navController = rememberNavController()
+        YouTubeHealth(onClose = { }, navController = navController)
     }
 }
