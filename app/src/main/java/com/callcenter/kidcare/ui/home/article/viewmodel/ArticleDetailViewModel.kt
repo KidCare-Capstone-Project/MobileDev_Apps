@@ -1,4 +1,4 @@
-package com.callcenter.kidcare.ui.funcauth.viewmodel
+package com.callcenter.kidcare.ui.home.article.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.callcenter.kidcare.data.Artikel
@@ -53,14 +53,13 @@ class ArticleDetailViewModel : ViewModel() {
 
         // Update Firestore
         firestore.collection("articles").document(uuid)
-            .update("loveCount", newLoveCount, "lovedBy", FieldValue.arrayUnion(userId))  // Menambahkan userId ke lovedBy
+            .update("loveCount", newLoveCount, "lovedBy", FieldValue.arrayUnion(userId))
             .addOnSuccessListener {
-                // Ambil data artikel terbaru dari Firestore setelah update
                 firestore.collection("articles").document(uuid).get()
                     .addOnSuccessListener { document ->
                         if (document != null && document.exists()) {
                             val updatedArtikel = document.toObject(Artikel::class.java)
-                            _article.value = updatedArtikel  // Update artikel di state
+                            _article.value = updatedArtikel
                         } else {
                             _errorMessage.value = "Artikel tidak ditemukan setelah update."
                         }

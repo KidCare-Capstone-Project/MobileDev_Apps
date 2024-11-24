@@ -19,6 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,7 +38,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.callcenter.kidcare.R
-import com.callcenter.kidcare.ui.funcauth.viewmodel.ArticleDetailViewModel
+import com.callcenter.kidcare.ui.home.article.viewmodel.ArticleDetailViewModel
+import com.callcenter.kidcare.ui.home.article.viewmodel.BookmarkViewModel
 import com.callcenter.kidcare.ui.theme.MinimalBackgroundDark
 import com.callcenter.kidcare.ui.theme.MinimalBackgroundLight
 import com.callcenter.kidcare.ui.theme.MinimalTextDark
@@ -53,6 +56,7 @@ import java.util.Locale
 fun ArticleDetailScreen(
     uuid: String,
     viewModel: ArticleDetailViewModel = viewModel(),
+    bookmarkViewModel: BookmarkViewModel = viewModel(),
     onBack: () -> Unit
 ) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
@@ -68,6 +72,10 @@ fun ArticleDetailScreen(
     var lastScrollPosition by remember { mutableStateOf(0) }
 
     val userHasLoved = article?.lovedBy?.contains(userId) == true
+
+    // Collect bookmarked articles
+    val bookmarkedArticles by bookmarkViewModel.bookmarkedArticles.collectAsState()
+    val isBookmarked = article?.let { bookmarkedArticles.any { it.uuid == it.uuid } } ?: false
 
     // Fetch article when UUID changes
     LaunchedEffect(key1 = uuid) {
@@ -252,8 +260,7 @@ fun ArticleDetailScreen(
                                 )
                             }
 
-                            // Floating Bar with Animated Visibility
-// Tampilkan floating bar sesuai status love
+                            // Floating Bar dengan Fungsionalitas Love dan Bookmark
                             AnimatedVisibility(
                                 visible = isFloatingVisible,
                                 enter = slideInVertically { it },
@@ -268,33 +275,30 @@ fun ArticleDetailScreen(
                                         .background(
                                             if (isSystemInDarkTheme()) MinimalBackgroundLight else MinimalBackgroundDark
                                         )
-                                        .padding(horizontal = 12.dp, vertical = 2.dp),
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
                                     horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    if (!userHasLoved) {
-                                        IconButton(onClick = { viewModel.updateLoveCount(uuid, userId) }) {
-                                            Icon(
-                                                imageVector = Icons.Default.Favorite,
-                                                contentDescription = "Love",
-                                                tint = Ocean8
-                                            )
-                                        }
-                                    } else {
-                                        IconButton(onClick = {}) {  // Tombol love dinonaktifkan jika sudah memberi love
-                                            Icon(
-                                                imageVector = Icons.Default.Favorite,
-                                                contentDescription = "Already Loved",
-                                                tint = Color.Gray  // Misalnya, ubah warnanya menjadi abu-abu jika sudah memberi love
-                                            )
-                                        }
+                                    // Tombol Love
+                                    IconButton(onClick = { viewModel.updateLoveCount(uuid, userId) }) {
+                                        Icon(
+                                            imageVector = if (userHasLoved) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                                            contentDescription = "Love",
+                                            tint = if (userHasLoved) Ocean8 else Color.Gray
+                                        )
                                     }
 
-                                    IconButton(onClick = { /* Handle Bookmark action */ }) {
+                                    Spacer(modifier = Modifier.width(16.dp))
+
+                                    // Tombol Bookmark
+                                    IconButton(onClick = {
+                                        val currentArticle = article ?: return@IconButton
+                                        bookmarkViewModel.toggleBookmark(currentArticle)
+                                    }) {
                                         Icon(
-                                            imageVector = Icons.Default.Bookmark,
-                                            contentDescription = "Bookmark",
-                                            tint = Ocean8
+                                            imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                                            contentDescription = if (isBookmarked) "Unbookmark" else "Bookmark",
+                                            tint = if (isBookmarked) Ocean8 else Color.Gray
                                         )
                                     }
                                 }

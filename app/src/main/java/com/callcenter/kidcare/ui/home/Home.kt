@@ -76,9 +76,11 @@ import com.callcenter.kidcare.ui.home.admin.EditUser
 import com.callcenter.kidcare.ui.home.admin.Users
 import com.callcenter.kidcare.ui.home.admin.tambahartikel.AddArtikel
 import com.callcenter.kidcare.ui.home.admin.tambahbanner.AddBanner
+import com.callcenter.kidcare.ui.home.admin.tambahproduk.AddProduct
 import com.callcenter.kidcare.ui.home.article.ArticleDetailScreen
 import com.callcenter.kidcare.ui.home.article.ArticleListScreen
 import com.callcenter.kidcare.ui.home.article.ArticleRecommendation
+import com.callcenter.kidcare.ui.home.article.BookmarkScreen
 import com.callcenter.kidcare.ui.home.childprofile.ChildDetailScreen
 import com.callcenter.kidcare.ui.home.childprofile.EditChildProfile
 import com.callcenter.kidcare.ui.home.favorite.Favorites
@@ -205,6 +207,7 @@ fun NavGraphBuilder.addHomeGraph(
 
     composable("articleList") {
         ArticleListScreen(
+            navController = navController,
             onArticleClick = { uuid ->
                 navController.navigate("articleDetail/$uuid")
             },
@@ -254,6 +257,12 @@ fun NavGraphBuilder.addHomeGraph(
     }
     composable("add_banner") {
         AddBanner(navController)
+    }
+    composable("bookmark") {
+        BookmarkScreen(navController = navController)
+    }
+    composable("add_product") {
+        AddProduct(navController)
     }
 }
 

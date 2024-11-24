@@ -2,6 +2,7 @@
 
 package com.callcenter.kidcare.ui.home.article
 
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,10 +14,11 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.TextSelectionColors
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Visibility
@@ -35,10 +37,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.callcenter.kidcare.ui.components.KidCareCard
-import com.callcenter.kidcare.ui.funcauth.viewmodel.list.ArticleViewModel
+import com.callcenter.kidcare.ui.home.article.viewmodel.list.ArticleViewModel
+import com.callcenter.kidcare.ui.home.article.viewmodel.BookmarkViewModel
 import com.callcenter.kidcare.ui.theme.*
 import com.callcenter.kidcare.ui.theme.ButtonPressedLight
 import java.text.SimpleDateFormat
@@ -48,6 +52,8 @@ import java.util.Locale
 @Composable
 fun ArticleListScreen(
     viewModel: ArticleViewModel = viewModel(),
+    bookmarkViewModel: BookmarkViewModel = viewModel(),
+    navController: NavHostController,
     onArticleClick: (String) -> Unit,
     onBack: () -> Unit
 ) {
@@ -57,6 +63,8 @@ fun ArticleListScreen(
     val errorMessage by viewModel.errorMessage.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
+
+    val bookmarkedArticles by bookmarkViewModel.bookmarkedArticles.collectAsState()
 
     val backgroundColor = if (isSystemInDarkTheme()) MinimalBackgroundDark else MinimalBackgroundLight
     val textColor = if (isSystemInDarkTheme()) MinimalTextDark else MinimalTextLight
@@ -88,21 +96,20 @@ fun ArticleListScreen(
                     .padding(paddingValues)
                     .padding(16.dp)
             ) {
-                // Custom Search Bar
+
                 CustomSearchBar(
                     searchQuery = searchQuery,
-                    onSearchQueryChange = { query -> viewModel.updateSearchQuery(query) }
+                    onSearchQueryChange = { query -> viewModel.updateSearchQuery(query) },
+                    onBookmarkClick = { navController.navigate("bookmark") }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Category Filter Row
                 LazyRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     item {
-                        // Category "Semua" untuk menampilkan semua artikel
                         CategoryChip(
                             categoryName = "Semua",
                             isSelected = selectedCategory.isEmpty(),
@@ -110,10 +117,8 @@ fun ArticleListScreen(
                         )
                     }
 
-                    // Ambil daftar kategori yang tidak kosong
                     val categories = articles.map { it.category }.distinct().filter { it.isNotEmpty() }
 
-                    // Tampilkan kategori yang ada
                     items(categories) { category ->
                         CategoryChip(
                             categoryName = category,
@@ -125,7 +130,6 @@ fun ArticleListScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Display the articles
                 Box(modifier = Modifier.fillMaxSize()) {
                     when {
                         isLoading -> {
@@ -296,7 +300,7 @@ fun ArticleListScreen(
                                                 Row(
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
-                                                    // Menampilkan Tanggal
+                                                    // Tanggal
                                                     Text(
                                                         text = formatTimestampcostum(article.timestamp),
                                                         style = MaterialTheme.typography.bodySmall.copy(color = textColor.copy(alpha = 0.7f)),
@@ -330,6 +334,21 @@ fun ArticleListScreen(
                                                         "${article.loveCount}",
                                                         style = MaterialTheme.typography.bodySmall.copy(color = textColor.copy(alpha = 0.7f))
                                                     )
+
+                                                    Spacer(modifier = Modifier.width(16.dp))
+                                                    // Bookmark Icon
+                                                    val isBookmarked = bookmarkedArticles.any { it.uuid == article.uuid }
+                                                    IconButton(
+                                                        onClick = {
+                                                            bookmarkViewModel.toggleBookmark(article)
+                                                        }
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Default.BookmarkBorder,
+                                                            contentDescription = if (isBookmarked) "Unbookmark" else "Bookmark",
+                                                            tint = if (isBookmarked) Ocean7 else textColor.copy(alpha = 0.7f)
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
@@ -372,6 +391,7 @@ fun CategoryChip(
 fun CustomSearchBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
+    onBookmarkClick: () -> Unit,
 ) {
     OutlinedTextField(
         value = searchQuery,
@@ -389,6 +409,15 @@ fun CustomSearchBar(
                 contentDescription = "Search Icon",
                 tint = if (isSystemInDarkTheme()) WhiteColor else DarkText.copy(alpha = 0.5f)
             )
+        },
+        trailingIcon = {
+            IconButton(onClick = { onBookmarkClick() }) {
+                Icon(
+                    imageVector = Icons.Default.Bookmark,
+                    contentDescription = "Bookmark",
+                    tint = if (isSystemInDarkTheme()) WhiteColor else DarkText.copy(alpha = 0.5f)
+                )
+            }
         },
         modifier = Modifier
             .fillMaxWidth()

@@ -164,6 +164,7 @@ fun AdminContent(navController: NavController, isLight: Boolean) {
         val adminFunctions = listOf(
             AdminFunction("Tambah Artikel V1", Icons.Filled.Add),
             AdminFunction("Tambah Banner", Icons.Filled.Image),
+            AdminFunction("Tambah Produk", Icons.Filled.AddShoppingCart),
             AdminFunction("Users", Icons.Filled.Person),
         )
 
@@ -212,6 +213,7 @@ fun AdminFunctionCard(function: AdminFunction, isLight: Boolean, navController: 
                     when (function.name) {
                         "Tambah Artikel V1" -> navController.navigate("add_article")
                         "Tambah Banner" -> navController.navigate("add_banner")
+                        "Tambah Produk" -> navController.navigate("add_product")
                         "Users" -> navController.navigate("users")
                         else -> {}
                     }

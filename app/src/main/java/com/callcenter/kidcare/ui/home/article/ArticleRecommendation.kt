@@ -37,7 +37,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.callcenter.kidcare.R
 import com.callcenter.kidcare.ui.components.KidCareCard
-import com.callcenter.kidcare.ui.funcauth.viewmodel.ArticleViewModel
+import com.callcenter.kidcare.ui.home.article.viewmodel.ArticleViewModel
 import com.callcenter.kidcare.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.Date

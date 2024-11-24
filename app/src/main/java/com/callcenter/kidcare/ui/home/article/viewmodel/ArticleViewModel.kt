@@ -1,4 +1,4 @@
-package com.callcenter.kidcare.ui.funcauth.viewmodel
+package com.callcenter.kidcare.ui.home.article.viewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf

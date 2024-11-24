@@ -1,4 +1,4 @@
-package com.callcenter.kidcare.ui.funcauth.viewmodel.list
+package com.callcenter.kidcare.ui.home.article.viewmodel.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
