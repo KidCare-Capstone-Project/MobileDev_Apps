@@ -9,6 +9,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -22,8 +24,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -41,8 +46,10 @@ import com.callcenter.kidcare.data.helper.getGrowthAnalysis
 import com.callcenter.kidcare.ui.components.KidCareCard
 import com.callcenter.kidcare.ui.theme.MinimalTextDark
 import com.callcenter.kidcare.ui.theme.MinimalTextLight
+import com.callcenter.kidcare.ui.theme.Neutral4
 import com.callcenter.kidcare.ui.theme.TextDarkColor
 import com.callcenter.kidcare.ui.theme.TextLightColor
+import com.callcenter.kidcare.ui.theme.WhiteColor
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -64,6 +71,9 @@ fun ChildDataTabContent(childId: String, navController: NavController) {
     var isUpdateDialogVisible by remember { mutableStateOf(false) }
     var aiAnalysis by remember { mutableStateOf<String?>(null) }
     var isAiLoading by remember { mutableStateOf(false) }
+
+    // State for focused image
+    var focusedImageUrl by remember { mutableStateOf<String?>(null) }
 
     val userId = auth.currentUser?.uid
 
@@ -130,7 +140,10 @@ fun ChildDataTabContent(childId: String, navController: NavController) {
                         childProfile = childProfile,
                         isDarkMode = isDarkMode,
                         onDelete = { isDeleteDialogVisible = true },
-                        onUpdate = { isUpdateDialogVisible = true }
+                        onUpdate = { isUpdateDialogVisible = true },
+                        onImageClick = { imageUrl ->
+                            focusedImageUrl = imageUrl
+                        }
                     )
 
                     if (isAiLoading) {
@@ -177,6 +190,13 @@ fun ChildDataTabContent(childId: String, navController: NavController) {
                 }
             }
         }
+
+        // Display focused image with pinch-to-zoom if available
+        focusedImageUrl?.let { url ->
+            FullscreenImageViewer(url) {
+                focusedImageUrl = null
+            }
+        }
     }
 }
 
@@ -186,7 +206,8 @@ fun ProfileInfoCard(
     childProfile: ChildProfile?,
     isDarkMode: Boolean,
     onDelete: () -> Unit,
-    onUpdate: () -> Unit
+    onUpdate: () -> Unit,
+    onImageClick: (String) -> Unit
 ) {
     val backgroundColor = if (isDarkMode) Color(0xFF424242) else Color(0xFFF5F5F5)
     val accentColor = if (isDarkMode) Color(0xFF81D4FA) else Color(0xFF039BE5)
@@ -200,11 +221,10 @@ fun ProfileInfoCard(
         ageMonthsLabel = ageMonthsLabel
     )
 
-    // Menentukan ikon gender berdasarkan nilai gender
     val genderIcon: ImageVector = when (childProfile?.gender?.lowercase(Locale.getDefault())) {
         "perempuan", "female" -> Icons.Filled.Female
         "laki-laki", "male" -> Icons.Filled.Male
-        else -> Icons.Default.Person // Ikon default jika gender tidak dikenali
+        else -> Icons.Default.Person
     }
 
     Card(
@@ -217,8 +237,6 @@ fun ProfileInfoCard(
         )
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
-
-            // Tambahkan Image Profil di sini
             childProfile?.profileImageUrl?.let { imageUrl ->
                 Image(
                     painter = rememberAsyncImagePainter(imageUrl),
@@ -228,6 +246,7 @@ fun ProfileInfoCard(
                         .align(Alignment.CenterHorizontally)
                         .clip(CircleShape)
                         .border(4.dp, accentColor, CircleShape)
+                        .clickable { onImageClick(imageUrl) } // Image click to show full screen
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -245,7 +264,6 @@ fun ProfileInfoCard(
                     ),
                     modifier = Modifier.weight(1f)
                 )
-                // Ikon Update
                 IconButton(
                     onClick = onUpdate,
                     modifier = Modifier
@@ -262,7 +280,6 @@ fun ProfileInfoCard(
                     )
                 }
                 Spacer(modifier = Modifier.width(26.dp))
-                // Ikon Delete
                 IconButton(
                     onClick = onDelete,
                     modifier = Modifier
@@ -287,7 +304,6 @@ fun ProfileInfoCard(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                // Height Card
                 GrowthResultCard(
                     label = stringResource(id = R.string.label_height),
                     value = childProfile?.height?.takeIf { it.isNotBlank() }?.let { "$it ${stringResource(id = R.string.height_unit)}" } ?: "- ${stringResource(id = R.string.height_unit)}",
@@ -296,20 +312,18 @@ fun ProfileInfoCard(
                     isDarkMode = isDarkMode,
                     accentColor = accentColor
                 )
-                // Birth Date Card
                 GrowthResultCard(
                     label = stringResource(id = R.string.label_age),
                     value = formattedAge,
                     icon = Icons.Default.Cake,
                     modifier = Modifier.weight(1f),
                     isDarkMode = isDarkMode,
-                    accentColor = if (isDarkMode) Color(0xFF81D4FA) else Color(0xFF039BE5)
+                    accentColor = accentColor
                 )
-                // Gender Card dengan ikon yang sesuai
                 GrowthResultCard(
                     label = stringResource(id = R.string.label_gender),
                     value = childProfile?.gender ?: "-",
-                    icon = genderIcon, // Menggunakan ikon yang telah ditentukan
+                    icon = genderIcon,
                     modifier = Modifier.weight(1f),
                     isDarkMode = isDarkMode,
                     accentColor = accentColor
@@ -455,7 +469,6 @@ fun parseSimpleMarkdown(text: String): AnnotatedString {
                     i += 3 + heading.length
                 }
                 text.startsWith("**", i) -> {
-
                     val end = text.indexOf("**", i + 2)
                     if (end != -1) {
                         val content = text.substring(i + 2, end)
@@ -506,8 +519,8 @@ fun DeleteConfirmationDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
-    val backgroundColor = if (isDarkMode) Color(0xFF616161) else Color(0xFFFFEBEE)
-    val borderColor = if (isDarkMode) Color(0xFF81D4FA) else Color(0xFFE57373)
+    val backgroundColor = if (isSystemInDarkTheme()) Neutral4.copy(alpha = 0.85f) else Neutral4.copy(alpha = 0.85f)
+    val borderColor = if (isDarkMode) Color(0xFF81D4FA) else Color(0xFF81D4FA)
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -552,7 +565,7 @@ fun DeleteConfirmationDialog(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = stringResource(id = R.string.delete_confirmation),
-                        style = MaterialTheme.typography.bodyMedium.copy(color = if (isDarkMode) TextDarkColor else TextLightColor),
+                        style = MaterialTheme.typography.bodyMedium.copy(color =  if (isSystemInDarkTheme()) WhiteColor else WhiteColor),
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(24.dp))
@@ -607,7 +620,6 @@ fun deleteChildProfile(
     }
 }
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun formatBirthDate(
@@ -636,5 +648,61 @@ fun formatBirthDate(
     } catch (e: DateTimeParseException) {
         Log.e("formatBirthDate", "Error parsing birth date: ${e.message}")
         "-"
+    }
+}
+
+@Composable
+fun FullscreenImageViewer(
+    url: String,
+    onClose: () -> Unit
+) {
+    var scale by remember { mutableFloatStateOf(1f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f))
+            .pointerInput(Unit) {}
+    ) {
+        Image(
+            painter = rememberAsyncImagePainter(url),
+            contentDescription = "Focused Image",
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .align(Alignment.Center)
+                .padding(32.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .graphicsLayer(
+                    scaleX = scale,
+                    scaleY = scale,
+                    translationX = offset.x,
+                    translationY = offset.y
+                )
+                .pointerInput(Unit) {
+                    detectTransformGestures { _, pan, zoom, _ ->
+                        scale = (scale * zoom).coerceIn(1f, 5f)
+                        offset += pan
+                    }
+                }
+        )
+
+        IconButton(
+            onClick = onClose,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(32.dp)
+                .background(
+                    color = Color.Black.copy(alpha = 0.5f),
+                    shape = CircleShape
+                )
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Close",
+                tint = Color.White
+            )
+        }
     }
 }

@@ -128,4 +128,9 @@ val DarkOnSurfaceColor = WhiteColor
 val LightAccentColor = AccentColor
 val DarkAccentColor = Ocean6
 
+// Warna untuk Snackbar
+val SnackbarSuccessBackground = Color(0xFF52C41A) // Hijau untuk pesan sukses
+val SnackbarErrorBackground = Color(0xFFD00036)   // Merah untuk pesan error
+val SnackbarContentColor = Color.White             // Putih untuk teks Snackbar
+
 const val AlphaNearOpaque = 0.95f

@@ -1,5 +1,6 @@
 package com.callcenter.kidcare.ui
 
+import android.content.Context
 import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,7 +14,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -25,16 +25,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.callcenter.kidcare.R
-import com.callcenter.kidcare.ui.theme.*
+import com.callcenter.kidcare.ui.theme.FunctionalGreen
+import com.callcenter.kidcare.ui.theme.FunctionalRed
+import com.callcenter.kidcare.ui.theme.Lavender0
+import com.callcenter.kidcare.ui.theme.Neutral0
+import com.callcenter.kidcare.ui.theme.Neutral8
+import com.callcenter.kidcare.ui.theme.Ocean6
+import com.callcenter.kidcare.ui.theme.Ocean7
+import com.callcenter.kidcare.ui.theme.Ocean8
 import com.callcenter.kidcare.ui.uionly.UiLoginViaEmail
 import com.google.firebase.auth.FirebaseAuth
 
@@ -47,46 +50,10 @@ fun ForgotPassword() {
     var loading by remember { mutableStateOf(false) }
     var titleVisible by remember { mutableStateOf(false) }
 
-    val firebaseAuth = FirebaseAuth.getInstance()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         titleVisible = true
-    }
-
-    // Handle back press to navigate to UiLoginViaEmail
-    DisposableEffect(context) {
-        val callback = object : androidx.activity.OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (context is ComponentActivity) {
-                    context.setContent { UiLoginViaEmail() }
-                }
-            }
-        }
-        (context as? ComponentActivity)?.onBackPressedDispatcher?.addCallback(callback)
-        onDispose {
-            callback.remove()
-        }
-    }
-
-    // Function to send password reset email
-    fun sendPasswordResetEmail() {
-        if (email.isNotEmpty()) {
-            loading = true
-            firebaseAuth.sendPasswordResetEmail(email)
-                .addOnCompleteListener { task ->
-                    loading = false
-                    if (task.isSuccessful) {
-                        message = "Password reset email sent."
-                        error = ""
-                    } else {
-                        error = "Failed to send reset email."
-                        message = ""
-                    }
-                }
-        } else {
-            error = "Please enter your email."
-        }
     }
 
     Box(
@@ -120,7 +87,6 @@ fun ForgotPassword() {
                         }
                     }
                 ) {
-                    @Suppress("DEPRECATION")
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back to Login",
@@ -133,7 +99,7 @@ fun ForgotPassword() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Illustration/Image with Animation
+            // Gambar ditambahkan di sini
             AnimatedVisibility(
                 visible = true,
                 enter = fadeIn(animationSpec = tween(durationMillis = 1000)),
@@ -141,42 +107,22 @@ fun ForgotPassword() {
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.assets_bg_forgot_password),
-                    contentDescription = "Forgot Password Illustration",
+                    contentDescription = stringResource(id = R.string.forgot_password_image_description),
                     modifier = Modifier
-                        .size(250.dp)
-                        .padding(bottom = 8.dp),
-                    contentScale = ContentScale.Fit
-                )
-            }
-
-            // Title with Fade-In Effect
-            AnimatedVisibility(
-                visible = titleVisible,
-                enter = fadeIn(animationSpec = tween(durationMillis = 1000)),
-                exit = fadeOut()
-            ) {
-                Text(
-                    text = "Lupa Password",
-                    style = MaterialTheme.typography.headlineLarge.copy(
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontFamily = FontFamily.SansSerif
-                    ),
-                    color = costum01,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                        .fillMaxWidth(0.5f)
+                        .aspectRatio(1f)
+                        .padding(bottom = 8.dp)
                 )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Card for Input Fields
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp)
                     .shadow(8.dp, RoundedCornerShape(16.dp)),
                 shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                 colors = CardDefaults.cardColors(containerColor = Neutral0)
             ) {
                 Column(
@@ -185,11 +131,10 @@ fun ForgotPassword() {
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Email TextField with Icon
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("Email", color = Ocean7) },
+                        label = { Text(stringResource(id = R.string.email), color = Ocean7) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Email,
@@ -201,9 +146,6 @@ fun ForgotPassword() {
                             .fillMaxWidth()
                             .padding(vertical = 4.dp),
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Email
-                        ),
                         colors = TextFieldDefaults.colors(
                             focusedTextColor = Neutral8,
                             unfocusedTextColor = Neutral8,
@@ -211,19 +153,23 @@ fun ForgotPassword() {
                             unfocusedContainerColor = Color.Transparent,
                             focusedIndicatorColor = Ocean8,
                             unfocusedIndicatorColor = Ocean6,
-                            cursorColor = Ocean8,
-                            errorIndicatorColor = FunctionalRed
+                            cursorColor = Ocean8
                         )
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Reset Password Button with Icon
                     Button(
-                        onClick = { sendPasswordResetEmail() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
+                        onClick = {
+                            sendPasswordResetEmail(
+                                email = email,
+                                context = context,
+                                onLoadingChange = { loading = it },
+                                onMessageChange = { message = it },
+                                onErrorChange = { error = it }
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Ocean7,
                             contentColor = Neutral0
@@ -232,58 +178,60 @@ fun ForgotPassword() {
                     ) {
                         if (loading) {
                             CircularProgressIndicator(
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .padding(end = 8.dp),
+                                modifier = Modifier.size(24.dp),
                                 color = Neutral0
                             )
                         } else {
-                            Icon(
-                                imageVector = Icons.Default.Email,
-                                contentDescription = "Reset Password Icon",
-                                tint = Neutral0,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Reset Password", fontWeight = FontWeight.Bold)
+                            Text(stringResource(id = R.string.reset_password))
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Error Message with Animation
-                    AnimatedVisibility(
-                        visible = error.isNotEmpty(),
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
+                    AnimatedVisibility(visible = error.isNotEmpty()) {
                         Text(
                             text = error,
                             color = FunctionalRed,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(top = 4.dp)
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
 
-                    // Success Message with Animation
-                    AnimatedVisibility(
-                        visible = message.isNotEmpty(),
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
+                    AnimatedVisibility(visible = message.isNotEmpty()) {
                         Text(
                             text = message,
-                            color = Ocean7,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(top = 4.dp)
+                            color = FunctionalGreen,
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+}
 
-        // Optional: You can add more overlay components here if needed
+fun sendPasswordResetEmail(
+    email: String,
+    context: Context,
+    onLoadingChange: (Boolean) -> Unit,
+    onMessageChange: (String) -> Unit,
+    onErrorChange: (String) -> Unit
+) {
+    val firebaseAuth = FirebaseAuth.getInstance()
+
+    if (email.isNotEmpty()) {
+        onLoadingChange(true)
+        firebaseAuth.sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                onLoadingChange(false)
+                if (task.isSuccessful) {
+                    onMessageChange(context.getString(R.string.reset_email_sent))
+                    onErrorChange("")
+                } else {
+                    onErrorChange(context.getString(R.string.reset_email_failed))
+                    onMessageChange("")
+                }
+            }
+    } else {
+        onErrorChange(context.getString(R.string.email_required_error))
     }
 }

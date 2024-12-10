@@ -1,10 +1,16 @@
 package com.callcenter.kidcare.ui.home.mainfeaturesgrid.predict.viewmodel
 
-import android.content.Context
+import android.app.Application
 import android.util.Log
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.callcenter.kidcare.data.ChildProfile
-import com.google.firebase.firestore.FirebaseFirestore
+import com.callcenter.kidcare.ui.home.mainfeaturesgrid.predictv2.data.AppDatabase
+import com.callcenter.kidcare.ui.home.mainfeaturesgrid.predictv2.data.Child
+import com.callcenter.kidcare.ui.home.mainfeaturesgrid.predictv2.data.ChildDao
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
 import java.io.IOException
@@ -13,15 +19,12 @@ import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 
-class PredictViewModel : ViewModel() {
-    private val firestore = FirebaseFirestore.getInstance()
+class PredictViewModel(application: Application) : AndroidViewModel(application) {
     private var tflite: Interpreter? = null
+    private val childDao: ChildDao = AppDatabase.getDatabase(application).childDao()
 
-    /**
-     * Memuat model TensorFlow Lite dari aset sebagai MappedByteBuffer.
-     */
     @Throws(IOException::class)
-    private fun loadModelFile(context: Context): MappedByteBuffer {
+    private fun loadModelFile(context: android.content.Context): MappedByteBuffer {
         val assetManager = context.assets
         assetManager.openFd("kidcare.tflite").use { fileDescriptor ->
             FileInputStream(fileDescriptor.fileDescriptor).use { inputStream ->
@@ -33,10 +36,7 @@ class PredictViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Menginisialisasi Interpreter TensorFlow Lite dengan model.
-     */
-    fun loadModel(context: Context) {
+    fun loadModel(context: android.content.Context) {
         try {
             val modelBuffer = loadModelFile(context)
             tflite = Interpreter(modelBuffer)
@@ -46,27 +46,33 @@ class PredictViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Mengambil data anak dari Firestore.
-     */
-    fun fetchChildrenData(uid: String, onResult: (List<ChildProfile>) -> Unit) {
-        firestore.collection("users").document(uid).collection("children")
-            .get()
-            .addOnSuccessListener { documents ->
-                val children = documents.map { doc ->
-                    doc.toObject(ChildProfile::class.java)
+    fun fetchChildrenData(onResult: (List<ChildProfile>) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val children: List<Child> = withContext(Dispatchers.IO) {
+                    childDao.getAllChildren()
                 }
-                onResult(children)
-            }
-            .addOnFailureListener { e ->
-                Log.e("PredictViewModel", "Error saat mengambil data", e)
+                val childProfiles = children.map { child ->
+                    ChildProfile(
+                        id = child.id,
+                        name = child.name,
+                        birthDate = child.birthDate,
+                        gender = child.gender,
+                        height = child.height,
+                        weight = child.weight,
+                        headCircumference = child.headCircumference
+                    )
+                }
+                onResult(childProfiles)
+            } catch (e: Exception) {
+                Log.e("PredictViewModel", "Error saat mengambil data dari Room", e)
                 onResult(emptyList())
             }
+        }
     }
 
     fun predict(child: ChildProfile): FloatArray? {
         tflite?.let { interpreter ->
-
             val heightValue = child.height.replace(",", ".").toFloatOrNull()
             val weightValue = child.weight.replace(",", ".").toFloatOrNull()
             val headCircumferenceValue = child.headCircumference.replace(",", ".").toFloatOrNull()
@@ -80,8 +86,7 @@ class PredictViewModel : ViewModel() {
             val gender = if (child.gender.lowercase() == "perempuan") 0.0f else 1.0f
 
             val inputSize = 5
-            val inputBuffer =
-                ByteBuffer.allocateDirect(4 * inputSize).order(ByteOrder.nativeOrder())
+            val inputBuffer = ByteBuffer.allocateDirect(4 * inputSize).order(ByteOrder.nativeOrder())
             inputBuffer.putFloat(gender)
             inputBuffer.putFloat(ageValue)
             inputBuffer.putFloat(heightValue)
@@ -92,8 +97,7 @@ class PredictViewModel : ViewModel() {
             val outputTensor = interpreter.getOutputTensor(0)
             val outputShape = outputTensor.shape()
             val outputSize = outputShape[1]
-            val outputBuffer =
-                ByteBuffer.allocateDirect(4 * outputSize).order(ByteOrder.nativeOrder())
+            val outputBuffer = ByteBuffer.allocateDirect(4 * outputSize).order(ByteOrder.nativeOrder())
 
             interpreter.run(inputBuffer, outputBuffer)
             outputBuffer.rewind()
@@ -110,9 +114,18 @@ class PredictViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Membersihkan Interpreter ketika ViewModel dihapus.
-     */
+    fun deleteChild(childProfile: ChildProfile, onResult: () -> Unit) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val child = childDao.getChildById(childProfile.id)
+                if (child != null) {
+                    childDao.deleteChild(child)
+                }
+            }
+            onResult()
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         tflite?.close()

@@ -24,13 +24,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -74,22 +75,35 @@ import com.callcenter.kidcare.ui.home.account.myaccount
 import com.callcenter.kidcare.ui.home.admin.AdminPanel
 import com.callcenter.kidcare.ui.home.admin.EditUser
 import com.callcenter.kidcare.ui.home.admin.Users
+import com.callcenter.kidcare.ui.home.admin.orderanmasuk.IncomingOrdersScreen
+import com.callcenter.kidcare.ui.home.admin.orderanmasuk.detail.OrderDetailScreen
 import com.callcenter.kidcare.ui.home.admin.tambahartikel.AddArtikel
-import com.callcenter.kidcare.ui.home.admin.tambahbanner.AddBanner
+import com.callcenter.kidcare.ui.home.admin.tambahposter.AddPoster
 import com.callcenter.kidcare.ui.home.admin.tambahproduk.AddProduct
+import com.callcenter.kidcare.ui.home.admin.tambahresepmenu.AddResepMenu
+import com.callcenter.kidcare.ui.home.admin.tambahresepmpasi.AddResepMpasi
 import com.callcenter.kidcare.ui.home.article.ArticleDetailScreen
 import com.callcenter.kidcare.ui.home.article.ArticleListScreen
 import com.callcenter.kidcare.ui.home.article.ArticleRecommendation
 import com.callcenter.kidcare.ui.home.article.BookmarkScreen
+import com.callcenter.kidcare.ui.home.childprofile.AddActivityScreen
 import com.callcenter.kidcare.ui.home.childprofile.ChildDetailScreen
 import com.callcenter.kidcare.ui.home.childprofile.EditChildProfile
-import com.callcenter.kidcare.ui.home.favorite.Favorites
+import com.callcenter.kidcare.ui.home.childprofile.diaryaktivitas.edit.EditActivityScreen
+import com.callcenter.kidcare.ui.home.childprofile.diarymenu.add.AddMenuScreen
+import com.callcenter.kidcare.ui.home.childprofile.diarymenu.detail.RecipeDetailScreen
 import com.callcenter.kidcare.ui.home.mainfeaturesgrid.ibuhamil.IbuHamilScreen
+import com.callcenter.kidcare.ui.home.mainfeaturesgrid.infoproduk.detail.ProductDetailScreen
 import com.callcenter.kidcare.ui.home.mainfeaturesgrid.infoproduk.info_produk
 import com.callcenter.kidcare.ui.home.mainfeaturesgrid.penangananstunting.penanganan_stunting
 import com.callcenter.kidcare.ui.home.mainfeaturesgrid.pencegahanstunting.pencegahan_stunting
 import com.callcenter.kidcare.ui.home.mainfeaturesgrid.predict.Predict
+import com.callcenter.kidcare.ui.home.mainfeaturesgrid.predictv2.PredictOnline
+import com.callcenter.kidcare.ui.home.mainfeaturesgrid.resepmpasi.BookmarkResepScreen
+import com.callcenter.kidcare.ui.home.mainfeaturesgrid.resepmpasi.detail.ResepDetailScreen
 import com.callcenter.kidcare.ui.home.mainfeaturesgrid.resepmpasi.resep_mpasi
+import com.callcenter.kidcare.ui.home.pesanan.PaymentsMidtrans
+import com.callcenter.kidcare.ui.home.pesanan.Pesanan
 import com.callcenter.kidcare.ui.options.videoDetail.VideoDetailScreen
 import com.callcenter.kidcare.ui.theme.KidCareTheme
 import java.util.Locale
@@ -147,8 +161,8 @@ fun NavGraphBuilder.addHomeGraph(
     composable(HomeSections.FEED.route) { from ->
         Feed(modifier, navController)
     }
-    composable(HomeSections.FAVORITES.route) {
-        Favorites(modifier)
+    composable(HomeSections.PESANAN.route) {
+        Pesanan(navController = navController, modifier = Modifier)
     }
     composable(HomeSections.PROFILE.route) {
         Profile(navController)
@@ -243,6 +257,9 @@ fun NavGraphBuilder.addHomeGraph(
     composable("predict") {
         Predict(navController)
     }
+    composable("predictv2") {
+        PredictOnline(navController)
+    }
     composable("pencegahan_stunting") {
         pencegahan_stunting(navController)
     }
@@ -252,17 +269,123 @@ fun NavGraphBuilder.addHomeGraph(
     composable("info_produk") {
         info_produk(navController)
     }
-    composable("resep_mpasi") {
-        resep_mpasi(navController)
+    composable("add_poster") {
+        AddPoster(navController)
     }
-    composable("add_banner") {
-        AddBanner(navController)
+    composable("add_resep_menu") {
+        AddResepMenu(navController)
+    }
+    composable("add_resep_mpasi") {
+        AddResepMpasi(navController)
     }
     composable("bookmark") {
         BookmarkScreen(navController = navController)
     }
     composable("add_product") {
         AddProduct(navController)
+    }
+    composable(
+        "productDetail/{productId}",
+        arguments = listOf(navArgument("productId") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val productId = backStackEntry.arguments?.getString("productId") ?: ""
+        if (productId.isNotBlank()) {
+            ProductDetailScreen(productId = productId, navController = navController)
+        } else {
+            // Handle jika productId kosong atau tidak valid
+            // Bisa menampilkan error atau kembali ke halaman sebelumnya
+        }
+    }
+    composable(
+        "paymentsMidtrans/{orderId}",
+        arguments = listOf(navArgument("orderId") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
+        PaymentsMidtrans(orderId = orderId, navController = navController)
+    }
+    composable(
+        "add_activity/{childId}",
+        arguments = listOf(navArgument("childId") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val childId = backStackEntry.arguments?.getString("childId") ?: ""
+        if (childId.isNotBlank()) {
+            AddActivityScreen(navController = navController, childId = childId)
+        } else {
+            Log.e("Navigation", "Invalid child ID provided to AddActivityScreen")
+        }
+    }
+
+    composable("incoming_orders") {
+        IncomingOrdersScreen(navController)
+    }
+
+    composable(
+        "order_detail/{orderId}",
+        arguments = listOf(navArgument("orderId") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
+        OrderDetailScreen(orderId = orderId, navController = navController)
+    }
+
+    composable("resepMpasiList") {
+        resep_mpasi(
+            navController = navController,
+            onRecipeClick = { uuid ->
+                navController.navigate("resepDetail/$uuid")
+            },
+            onBack = { navController.popBackStack() }
+        )
+    }
+    composable("resepDetail/{uuid}") { backStackEntry ->
+        val uuid = backStackEntry.arguments?.getString("uuid") ?: ""
+        ResepDetailScreen(
+            uuid = uuid,
+            onBack = { navController.popBackStack() }
+        )
+    }
+    composable("bookmarkResepMpasi") {
+        BookmarkResepScreen(
+            navController = navController
+        )
+    }
+
+    composable(
+        "edit_activity/{childId}/{activityTimestamp}",
+        arguments = listOf(
+            navArgument("childId") { type = NavType.StringType },
+            navArgument("activityTimestamp") { type = NavType.LongType }
+        )
+    ) { backStackEntry ->
+        val childId = backStackEntry.arguments?.getString("childId") ?: ""
+        val activityTimestamp = backStackEntry.arguments?.getLong("activityTimestamp") ?: 0L
+        EditActivityScreen(
+            navController = navController,
+            childId = childId,
+            activityTimestamp = activityTimestamp
+        )
+    }
+
+    composable(
+        "add_menu/{childId}",
+        arguments = listOf(navArgument("childId") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val childId = backStackEntry.arguments?.getString("childId") ?: ""
+        AddMenuScreen(childId = childId, navController = navController)
+    }
+    composable(
+        "recipe_detail/{recipeId}",
+        arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val recipeId = backStackEntry.arguments?.getString("recipeId")
+        if (recipeId != null && recipeId.isNotBlank()) {
+            RecipeDetailScreen(
+                recipeId = recipeId,
+                onBack = { navController.popBackStack() }
+            )
+        } else {
+            Log.e("Navigation", "Invalid or missing recipe ID")
+            navController.popBackStack()
+        }
     }
 }
 
@@ -272,7 +395,7 @@ enum class HomeSections(
     val route: String
 ) {
     FEED(R.string.home_feed, Icons.Outlined.Home, "home/feed"),
-    FAVORITES(R.string.home_favorites, Icons.Outlined.Favorite, "home/favorites"),
+    PESANAN(R.string.home_pesanan, Icons.Outlined.ShoppingCart, "home/pesanan"),
     PROFILE(R.string.home_profile, Icons.Outlined.AccountCircle, "home/profile")
 }
 
@@ -290,7 +413,7 @@ fun KidCareBottomBar(
 
     KidCareSurface(
         modifier = modifier
-            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),  // Apply rounded corners on top only
+            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
         color = color,
         contentColor = contentColor
     ) {
@@ -324,14 +447,15 @@ fun KidCareBottomBar(
                         Icon(
                             imageVector = section.icon,
                             tint = tint,
-                            contentDescription = text
+                            contentDescription = text,
+                            modifier = Modifier.size(20.dp)
                         )
                     },
                     text = {
                         Text(
                             text = text,
                             color = tint,
-                            style = MaterialTheme.typography.labelLarge,
+                            style = MaterialTheme.typography.labelSmall,
                             maxLines = 1
                         )
                     },
@@ -339,7 +463,7 @@ fun KidCareBottomBar(
                     onSelected = { navigateToRoute(section.route) },
                     animSpec = springSpec,
                     modifier = BottomNavigationItemPadding
-                        .clip(BottomNavIndicatorShape)  // Make sure it only affects the indicator
+                        .clip(BottomNavIndicatorShape)
                 )
             }
         }
@@ -422,7 +546,7 @@ private fun KidCareBottomNavLayout(
 }
 
 @Composable
-fun KidCareBottomNavigationItem(
+private fun KidCareBottomNavigationItem(
     icon: @Composable BoxScope.() -> Unit,
     text: @Composable BoxScope.() -> Unit,
     selected: Boolean,
@@ -430,7 +554,6 @@ fun KidCareBottomNavigationItem(
     animSpec: AnimationSpec<Float>,
     modifier: Modifier = Modifier
 ) {
-
     val animationProgress by animateFloatAsState(
         if (selected) 1f else 0f, animSpec,
         label = "animation progress"
@@ -513,7 +636,7 @@ private fun MeasureScope.placeTextAndIcon(
 
 @Composable
 private fun KidCareBottomNavIndicator(
-    strokeWidth: Dp = 2.dp,
+    strokeWidth: Dp = 1.dp,
     color: Color = Color(0xFFFFFFFF),
     shape: Shape = BottomNavIndicatorShape
 ) {

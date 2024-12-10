@@ -13,5 +13,5 @@ data class Artikel(
     val timestamp: Long = System.currentTimeMillis(),
     val viewCount: Long = 0L,
     val loveCount: Long = 0L,
-    val lovedBy: List<String> = emptyList()
+    val lovedBy: List<String> = emptyList(),
 )

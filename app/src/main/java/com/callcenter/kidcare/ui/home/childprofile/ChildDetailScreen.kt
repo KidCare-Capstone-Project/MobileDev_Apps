@@ -4,8 +4,8 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.*
+import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -13,69 +13,78 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.callcenter.kidcare.ui.theme.*
+import com.google.accompanist.pager.*
+import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun ChildDetailScreen(childId: String, navController: NavController) {
-    var selectedTabIndex by remember { mutableStateOf(0) }
+    val pagerState = rememberPagerState(initialPage = 0)
+    val coroutineScope = rememberCoroutineScope()
     val isLight = !KidCareTheme.colors.isDark
-
     val tabBackgroundColor = KidCareTheme.colors.uiBackground
-    val tabContentColor = if (isLight) MinimalTextLight else MinimalTextDark
+
+    val tabs = listOf("Data Anak", "Diari Harian")
 
     Column {
         TabRow(
-            selectedTabIndex = selectedTabIndex,
+            selectedTabIndex = pagerState.currentPage,
             backgroundColor = tabBackgroundColor,
-            contentColor = tabContentColor,
-            modifier = Modifier.shadow(4.dp).fillMaxWidth()
+            contentColor = if (isLight) MinimalTextLight else MinimalTextDark,
+            modifier = Modifier
+                .shadow(4.dp)
+                .fillMaxWidth(),
+            indicator = { tabPositions ->
+                TabRowDefaults.Indicator(
+                    Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                    color = if (isLight) DarkBlue else LightBlue
+                )
+            },
+            divider = {
+                Divider(
+                    color = if (isLight) DarkBlue else LightBlue,
+                    thickness = 1.dp
+                )
+            }
         ) {
-            Tab(
-                selected = selectedTabIndex == 0,
-                onClick = { selectedTabIndex = 0 },
-                modifier = Modifier.background(
-                    color = if (selectedTabIndex == 0) tabBackgroundColor else Color.Transparent
-                ),
-                text = {
-                    Text(
-                        "Data Anak",
-                        style = MaterialTheme.typography.h6.copy(
-                            color = if (selectedTabIndex == 0) if (isLight) MinimalTextLight else MinimalTextDark else Ocean9
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = pagerState.currentPage == index,
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
+                    modifier = Modifier.background(
+                        color = if (pagerState.currentPage == index) tabBackgroundColor else Color.Transparent
+                    ),
+                    text = {
+                        Text(
+                            title,
+                            style = MaterialTheme.typography.h6.copy(
+                                color = if (pagerState.currentPage == index) {
+                                    if (isLight) MinimalTextLight else MinimalTextDark
+                                } else if (isLight) MinimalTextLight else MinimalTextDark
+                            )
                         )
-                    )
-                }
-            )
-            Tab(
-                selected = selectedTabIndex == 1,
-                onClick = { selectedTabIndex = 1 },
-                modifier = Modifier.background(
-                    color = if (selectedTabIndex == 1) tabBackgroundColor else Color.Transparent
-                ),
-                text = {
-                    Text(
-                        "Diari Harian",
-                        style = MaterialTheme.typography.h6.copy(
-                            color = if (selectedTabIndex == 1) if (isLight) MinimalTextLight else MinimalTextDark else Ocean9
-                        )
-                    )
-                }
-            )
+                    }
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        when (selectedTabIndex) {
-            0 -> ChildDataTabContent(childId = childId, navController = navController)
-            1 -> DailyDiaryTabContent()
+        HorizontalPager(
+            count = tabs.size,
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize()
+        ) { page ->
+            when (page) {
+                0 -> ChildDataTabContent(childId = childId, navController = navController)
+                1 -> DailyDiaryTabContent(navController = navController, childId = childId)
+            }
         }
-    }
-}
-
-@Composable
-fun DailyDiaryTabContent() {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Diari Harian", style = MaterialTheme.typography.h5, color = MaterialTheme.colors.primary)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Belum ada catatan diari harian.", style = MaterialTheme.typography.body1, color = MaterialTheme.colors.onSurface)
     }
 }

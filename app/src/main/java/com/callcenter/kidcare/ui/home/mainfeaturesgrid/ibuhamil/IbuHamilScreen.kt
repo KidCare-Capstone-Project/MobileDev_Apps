@@ -54,7 +54,7 @@ import com.google.firebase.storage.FirebaseStorage
 @Composable
 fun IbuHamilScreen(navController: NavController) {
     val storage = FirebaseStorage.getInstance()
-    val storageRef = storage.reference.child("banner/ibu_hamil")
+    val storageRef = storage.reference.child("poster/ibu_hamil")
 
     var imageUrls by remember { mutableStateOf<List<String>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }

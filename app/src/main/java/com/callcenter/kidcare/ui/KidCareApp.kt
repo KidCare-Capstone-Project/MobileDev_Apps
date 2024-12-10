@@ -17,15 +17,23 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -34,10 +42,15 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -56,8 +69,10 @@ import com.callcenter.kidcare.ui.navigation.rememberKidCareNavController
 import com.callcenter.kidcare.ui.options.AIInteraction
 import com.callcenter.kidcare.ui.options.YouTubeHealth
 import com.callcenter.kidcare.ui.theme.KidCareTheme
+import com.callcenter.kidcare.ui.theme.Ocean8
 import com.callcenter.kidcare.ui.uionly.VerifyEmailScreen
 import com.google.firebase.auth.FirebaseAuth
+import kotlin.math.roundToInt
 
 @RequiresApi(Build.VERSION_CODES.R)
 @Preview
@@ -73,6 +88,7 @@ fun KidCareApp() {
                     navController = kidCareNavController.navController,
                     startDestination = MainDestinations.HOME_ROUTE
                 ) {
+
                     composableWithCompositionLocal(
                         route = MainDestinations.HOME_ROUTE
                     ) { backStackEntry ->
@@ -119,6 +135,13 @@ fun MainContainer(
 
         var showOptionPanel by remember { mutableStateOf(false) }
 
+        // Tambahkan variabel status untuk DestinationBar
+        var isDestinationBarVisible by rememberSaveable { mutableStateOf(true) }
+
+        // State untuk posisi FAB
+        var offsetX by remember { mutableStateOf(0f) }
+        var offsetY by remember { mutableStateOf(0f) }
+
         KidCareScaffold(
             bottomBar = {
                 if (showBottomBar) {
@@ -127,6 +150,32 @@ fun MainContainer(
                         currentRoute = currentRoute ?: HomeSections.FEED.route,
                         navigateToRoute = navController::navigate,
                         modifier = Modifier.navigationBarsPadding()
+                    )
+                }
+            },
+            floatingActionButton = {
+                // FloatingActionButton yang dapat digeser
+                FloatingActionButton(
+                    onClick = { isDestinationBarVisible = !isDestinationBarVisible },
+                    backgroundColor = Ocean8,
+                    contentColor = Color.White,
+                    modifier = Modifier
+                        .size(40.dp) // Ukuran FAB standar
+                        .offset {
+                            IntOffset(offsetX.roundToInt(), offsetY.roundToInt())
+                        }
+                        .pointerInput(Unit) {
+                            detectDragGestures { change, dragAmount ->
+                                change.consume()
+                                offsetX += dragAmount.x
+                                offsetY += dragAmount.y
+                            }
+                        }
+                ) {
+                    Icon(
+                        imageVector = if (isDestinationBarVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        contentDescription = if (isDestinationBarVisible) "Hide Destination Bar" else "Show Destination Bar",
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             },
@@ -142,15 +191,15 @@ fun MainContainer(
         ) { padding ->
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    if (currentRoute != MainDestinations.YOUTUBE_HEALTH_ROUTE &&
+                    // Kondisikan tampilan DestinationBar
+                    if (isDestinationBarVisible && currentRoute != MainDestinations.YOUTUBE_HEALTH_ROUTE &&
                         currentRoute != MainDestinations.AI_INTERACTION_ROUTE
                     ) {
                         DestinationBar(
                             modifier = Modifier.fillMaxWidth(),
                             navigateTo = { route ->
                                 navController.navigate(route)
-                            },
-                            onOpenOptions = { showOptionPanel = true }
+                            }
                         )
                     }
 
@@ -161,7 +210,6 @@ fun MainContainer(
                     ) {
                         addHomeGraph(
                             navController = navController,
-
                             modifier = Modifier
                                 .padding(padding)
                                 .consumeWindowInsets(padding)

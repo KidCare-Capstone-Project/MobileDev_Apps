@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.FoodBank
 import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.Preview
 import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +26,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.callcenter.kidcare.R
 import com.callcenter.kidcare.ui.components.KidCareCard
@@ -35,6 +37,7 @@ import com.callcenter.kidcare.ui.theme.MinimalTextLight
 fun MainFeaturesGrid(navController: NavController) {
     @Suppress("DEPRECATION") val buttons: List<Pair<Int, ImageVector>> = listOf(
         R.string.predict to Icons.Default.ShowChart,
+        R.string.predictv2 to Icons.Default.Preview,
         R.string.ibu_hamil to Icons.Default.FamilyRestroom,
         R.string.pencegahan_stunting to Icons.Default.HealthAndSafety,
         R.string.penanganan_stunting to Icons.Default.MedicalServices,
@@ -54,38 +57,39 @@ fun MainFeaturesGrid(navController: NavController) {
         items(buttons) { (textRes, icon) ->
             KidCareCard(
                 modifier = Modifier
-                    .width(150.dp)
-                    .height(60.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .width(130.dp)
+                    .height(50.dp)
+                    .clip(RoundedCornerShape(12.dp))
                     .clickable {
                         when (textRes) {
                             R.string.predict -> navController.navigate("predict")
+                            R.string.predictv2 -> navController.navigate("predictv2")
                             R.string.ibu_hamil -> navController.navigate("ibu_hamil")
                             R.string.pencegahan_stunting -> navController.navigate("pencegahan_stunting")
                             R.string.penanganan_stunting -> navController.navigate("penanganan_stunting")
                             R.string.info_produk -> navController.navigate("info_produk")
-                            R.string.resep_mpasi -> navController.navigate("resep_mpasi")
+                            R.string.resep_mpasi -> navController.navigate("resepMpasiList")
                         }
                     },
-                shape = RoundedCornerShape(18.dp)
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(12.dp)
+                        .padding(8.dp)
                 ) {
                     Icon(
                         icon,
                         contentDescription = stringResource(id = textRes),
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(20.dp),
                         tint = Color(0xff00a1c7)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         stringResource(id = textRes),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                         textAlign = TextAlign.Center,
                         color = textColor,
                         modifier = Modifier

@@ -37,12 +37,14 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,12 +55,13 @@ import com.callcenter.kidcare.ui.KidCareApp
 import com.callcenter.kidcare.ui.UiRegister
 import com.callcenter.kidcare.ui.funcauth.FunLoginEmail
 import com.callcenter.kidcare.ui.funcauth.FunLoginGoogle
+import com.callcenter.kidcare.ui.funcauth.viewmodel.FunLoginEmailFactory
 import com.callcenter.kidcare.ui.theme.*
 
 @Suppress("DEPRECATION")
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
-fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
+fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel(factory = FunLoginEmailFactory(LocalContext.current))) {
     val uiState by funLoginEmail.uiState.collectAsState()
     val context = LocalContext.current
 
@@ -84,19 +87,16 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
 
     var showPassword by remember { mutableStateOf(false) }
 
+    // Ubah dari 6 digit menjadi 4 digit
     var digit1 by remember { mutableStateOf("") }
     var digit2 by remember { mutableStateOf("") }
     var digit3 by remember { mutableStateOf("") }
     var digit4 by remember { mutableStateOf("") }
-    var digit5 by remember { mutableStateOf("") }
-    var digit6 by remember { mutableStateOf("") }
 
     val focusRequester1 = remember { FocusRequester() }
     val focusRequester2 = remember { FocusRequester() }
     val focusRequester3 = remember { FocusRequester() }
     val focusRequester4 = remember { FocusRequester() }
-    val focusRequester5 = remember { FocusRequester() }
-    val focusRequester6 = remember { FocusRequester() }
 
     LaunchedEffect(uiState.verificationDialogVisible) {
         if (uiState.verificationDialogVisible) {
@@ -144,7 +144,7 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back to Google Login",
+                        contentDescription = stringResource(id = R.string.back_to_google_login),
                         tint = Ocean7,
                         modifier = Modifier.size(24.dp)
                     )
@@ -161,7 +161,7 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.assets_login),
-                    contentDescription = "Login Image",
+                    contentDescription = stringResource(id = R.string.login_image_description),
                     modifier = Modifier
                         .fillMaxWidth(0.35f)
                         .aspectRatio(1f)
@@ -175,7 +175,7 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                 exit = fadeOut()
             ) {
                 Text(
-                    text = "Masuk dengan Email",
+                    text = stringResource(id = R.string.login_with_email),
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontSize = 28.sp,
                         fontWeight = FontWeight.ExtraBold,
@@ -207,11 +207,11 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("Email", color = Ocean7) },
+                        label = { Text(stringResource(id = R.string.email), color = Ocean7) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Email,
-                                contentDescription = "Email Icon",
+                                contentDescription = stringResource(id = R.string.email_icon_description),
                                 tint = Ocean8
                             )
                         },
@@ -242,11 +242,11 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                         onValueChange = {
                             password = it
                         },
-                        label = { Text("Password", color = Ocean7) },
+                        label = { Text(stringResource(id = R.string.password), color = Ocean7) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Lock,
-                                contentDescription = "Password Icon",
+                                contentDescription = stringResource(id = R.string.password_icon_description),
                                 tint = Ocean8
                             )
                         },
@@ -255,7 +255,7 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                             IconButton(onClick = { showPassword = !showPassword }) {
                                 val icon =
                                     if (showPassword) Icons.Default.Visibility else Icons.Default.VisibilityOff
-                                Icon(imageVector = icon, contentDescription = null, tint = Ocean8)
+                                Icon(imageVector = icon, contentDescription = stringResource(id = R.string.toggle_password_visibility), tint = Ocean8)
                             }
                         },
                         modifier = Modifier
@@ -276,6 +276,7 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                                 backgroundColor = Ocean8.copy(alpha = 0.4f)
                             )
                         )
+
                     )
 
                     AnimatedVisibility(
@@ -284,7 +285,7 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                         exit = fadeOut(animationSpec = tween(durationMillis = 300))
                     ) {
                         Text(
-                            text = "Password harus minimal 8 karakter",
+                            text = stringResource(id = R.string.password_min_length),
                             color = FunctionalRed,
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier
@@ -306,7 +307,7 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                             .padding(end = 4.dp)
                     ) {
                         Text(
-                            text = "Lupa Password?",
+                            text = stringResource(id = R.string.forgot_password),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Medium,
                                 fontFamily = FontFamily.SansSerif
@@ -341,12 +342,12 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                         } else {
                             Icon(
                                 imageVector = Icons.Default.Email,
-                                contentDescription = "Login Icon",
+                                contentDescription = stringResource(id = R.string.login_icon_description),
                                 tint = Neutral0,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Masuk", fontWeight = FontWeight.Bold)
+                            Text(stringResource(id = R.string.login), fontWeight = FontWeight.Bold)
                         }
                     }
 
@@ -358,14 +359,14 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                             .padding(vertical = 8.dp)
                     ) {
                         Text(
-                            text = "Belum punya akun? Silakan ",
+                            text = stringResource(id = R.string.dont_have_account),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontFamily = FontFamily.SansSerif
                             ),
                             color = Neutral8
                         )
                         Text(
-                            text = "Daftar",
+                            text = stringResource(id = R.string.register),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontFamily = FontFamily.SansSerif,
                                 textDecoration = TextDecoration.Underline,
@@ -384,12 +385,13 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
             Spacer(modifier = Modifier.height(16.dp))
         }
 
+        // Dialog Verifikasi 4 Digit
         if (uiState.verificationDialogVisible) {
             AlertDialog(
                 onDismissRequest = { funLoginEmail.dismissVerificationDialog() },
                 title = {
                     Text(
-                        "Kode Verifikasi",
+                        stringResource(id = R.string.verification_code),
                         color = Ocean8,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.SemiBold
@@ -399,13 +401,13 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                 text = {
                     Column {
                         Text(
-                            "Sebuah kode verifikasi telah dikirim ke email Anda.",
+                            stringResource(id = R.string.verification_message),
                             color = Ocean7,
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Row dengan 6 DigitTextField yang telah diperbaiki
+                        // Row dengan 4 DigitTextField
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -436,22 +438,8 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                                 digit = digit4,
                                 onValueChange = { digit4 = it },
                                 focusRequester = focusRequester4,
-                                onNext = { focusRequester5.requestFocus() },
-                                onBackspace = { focusRequester3.requestFocus() }
-                            )
-                            DigitTextField(
-                                digit = digit5,
-                                onValueChange = { digit5 = it },
-                                focusRequester = focusRequester5,
-                                onNext = { focusRequester6.requestFocus() },
-                                onBackspace = { focusRequester4.requestFocus() }
-                            )
-                            DigitTextField(
-                                digit = digit6,
-                                onValueChange = { digit6 = it },
-                                focusRequester = focusRequester6,
                                 onNext = { /* Tidak ada field berikutnya */ },
-                                onBackspace = { focusRequester5.requestFocus() }
+                                onBackspace = { focusRequester3.requestFocus() }
                             )
                         }
 
@@ -471,7 +459,7 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                     Button(
                         onClick = {
                             funLoginEmail.validateVerificationCode(
-                                "${digit1}${digit2}${digit3}${digit4}${digit5}${digit6}",
+                                "${digit1}${digit2}${digit3}${digit4}",
                                 email,
                                 password
                             )
@@ -484,7 +472,7 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                         if (uiState.loadingVerification) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Neutral0)
                         } else {
-                            Text("Verifikasi & Masuk", color = Neutral0)
+                            Text(stringResource(id = R.string.verify_and_login), color = Neutral0)
                         }
                     }
                 },
@@ -497,7 +485,7 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                         ),
                         border = BorderStroke(1.dp, Ocean6)
                     ) {
-                        Text("Batal", color = Ocean7)
+                        Text(stringResource(id = R.string.cancel), color = Ocean7)
                     }
                 },
                 shape = RoundedCornerShape(16.dp),
@@ -528,7 +516,7 @@ fun UiLoginViaEmail(funLoginEmail: FunLoginEmail = viewModel()) {
                         ),
                         modifier = Modifier.padding(8.dp)
                     ) {
-                        Text("OK", color = Neutral0)
+                        Text(stringResource(id = R.string.ok), color = Neutral0)
                     }
                 },
                 shape = RoundedCornerShape(12.dp),
@@ -574,7 +562,7 @@ fun DigitTextField(
             imeAction = ImeAction.Next
         ),
         modifier = Modifier
-            .width(48.dp)
+            .width(58.dp)
             .background(Lavender1, RoundedCornerShape(10.dp))
             .padding(1.dp)
             .focusRequester(focusRequester)
@@ -598,12 +586,17 @@ fun DigitTextField(
             errorContainerColor = Lavender0,
             focusedTextColor = Neutral8,
             unfocusedTextColor = Neutral8,
-            cursorColor = Ocean8
+            cursorColor = Ocean8,
+            selectionColors = TextSelectionColors(
+                handleColor = Ocean8,
+                backgroundColor = Ocean8.copy(alpha = 0.4f)
+            )
         ),
         textStyle = LocalTextStyle.current.copy(
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 0.sp
+            letterSpacing = 0.sp,
+            textAlign = TextAlign.Center
         )
     )
 }

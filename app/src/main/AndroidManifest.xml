@@ -16,6 +16,12 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        tools:ignore="ProtectedPermissions" />
+
     <application
         android:allowBackup="true"
         android:enableOnBackInvokedCallback="true"
@@ -27,6 +33,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.KidCare"
         tools:targetApi="35">
+
+        <!-- Receiver untuk notifikasi -->
+        <receiver
+            android:name=".ui.notifications.NotificationReceiver"
+            android:exported="false" />
+
+        <!-- Receiver untuk menangani reboot perangkat -->
+        <receiver
+            android:name=".ui.notifications.BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -48,7 +68,8 @@
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.KidCare">
+            android:theme="@style/Theme.KidCare"
+            android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection|screenLayout|uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

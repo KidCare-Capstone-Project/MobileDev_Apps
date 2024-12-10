@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -39,25 +40,45 @@ import kotlinx.coroutines.delay
 @Composable
 fun GoogleLoginScreen(
     onClick: () -> Unit,
-    onEmailLoginClick: () -> Unit
+    onEmailLoginClick: () -> Unit,
+    selectedLanguage: String
 ) {
     val carouselImages = listOf(
         R.drawable.carousel_1_welcome_new,
         R.drawable.carousel_2_welcome_new_1,
         R.drawable.carousel_3_welcome
     )
-    val carouselTitles = listOf(
-        "Selamat Datang Di KidCare",
-        "Stunting? Stop! Anak Sehat, Masa Depan Cerah.",
-        "Monitor Kesehatan Anak"
-    )
-    val carouselDescriptions = listOf(
-        "\"KidCare\" adalah aplikasi inovatif yang membantu orang tua memantau pertumbuhan \n" +
-                "anak dan memberikan informasi penting tentang pencegahan stunting, dengan tips \n" +
-                "kesehatan dan gizi yang mudah diakses.",
-        "Jangan biarkan stunting mencuri masa depan anakmu. Dengan KidCare, pantau tumbuh kembang si kecil, pastikan nutrisinya tercukupi.",
-        "Monitor kesehatan anak secara rutin. Pastikan nutrisi seimbang, tumbuh kembang optimal, dan akses layanan kesehatan. Cegah stunting, wujudkan generasi sehat dan cerdas!"
-    )
+    val resources = LocalContext.current.resources
+
+    val carouselTitles = when (selectedLanguage) {
+        "en" -> listOf(
+            "Welcome to KidCare",
+            "Stunting? Stop it! Healthy Children, Bright Future.",
+            "Monitor Child's Health"
+        )
+        "id" -> listOf(
+            "Selamat Datang Di KidCare",
+            "Stunting? Stop! Anak Sehat, Masa Depan Cerah.",
+            "Monitor Kesehatan Anak"
+        )
+        else -> resources.getStringArray(R.array.carousel_titles_default).toList()
+    }
+
+    val carouselDescriptions = when (selectedLanguage) {
+        "en" -> listOf(
+            "\"KidCare\" is an innovative app that helps parents monitor child growth and provides important information on stunting prevention with accessible health and nutrition tips.",
+            "Don't let stunting steal your child's future. With KidCare, monitor your child's development and ensure proper nutrition.",
+            "Routinely monitor your child's health. Ensure balanced nutrition, optimal growth, and access to healthcare. Prevent stunting, realize a healthy and smart generation!"
+        )
+        "id" -> listOf(
+            "\"KidCare\" adalah aplikasi inovatif yang membantu orang tua memantau pertumbuhan \n" +
+                    "anak dan memberikan informasi penting tentang pencegahan stunting, dengan tips \n" +
+                    "kesehatan dan gizi yang mudah diakses.",
+            "Jangan biarkan stunting mencuri masa depan anakmu. Dengan KidCare, pantau tumbuh kembang si kecil, pastikan nutrisinya tercukupi.",
+            "Monitor kesehatan anak secara rutin. Pastikan nutrisi seimbang, tumbuh kembang optimal, dan akses layanan kesehatan. Cegah stunting, wujudkan generasi sehat dan cerdas!"
+        )
+        else -> resources.getStringArray(R.array.carousel_descriptions_default).toList()
+    }
 
     @Suppress("DEPRECATION") val pagerState = rememberPagerState() // Updated to use androidx.compose.foundation.pager
     var loading by remember { mutableStateOf(false) }

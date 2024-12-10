@@ -42,6 +42,7 @@ import com.callcenter.kidcare.ui.navigation.MainDestinations
 import com.callcenter.kidcare.ui.options.AIInteraction
 import com.callcenter.kidcare.ui.theme.AlphaNearOpaque
 import com.callcenter.kidcare.ui.theme.KidCareTheme
+import com.callcenter.kidcare.ui.theme.Ocean8
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -56,8 +57,7 @@ import java.util.Locale
 @Composable
 fun DestinationBar(
     modifier: Modifier = Modifier,
-    navigateTo: (String) -> Unit,
-    onOpenOptions: () -> Unit
+    navigateTo: (String) -> Unit
 ) {
     val sharedElementScope = LocalSharedTransitionScope.current ?: throw IllegalStateException("No shared element scope")
     val navAnimatedScope = LocalNavAnimatedVisibilityScope.current ?: throw IllegalStateException("No nav scope")
@@ -146,7 +146,7 @@ fun DestinationBar(
                             }) {
                                 Icon(
                                     imageVector = Icons.Outlined.ExpandMore,
-                                    tint = KidCareTheme.colors.brand,
+                                    tint = Ocean8,
                                     contentDescription = stringResource(R.string.ExpandMore),
                                     modifier = Modifier.rotate(rotationAngle)
                                 )
@@ -312,8 +312,7 @@ fun PreviewDestinationBar() {
     KidCareTheme {
         DestinationBar(
             modifier = Modifier.fillMaxWidth(),
-            navigateTo = {},
-            onOpenOptions = {}
+            navigateTo = {}
         )
     }
 }

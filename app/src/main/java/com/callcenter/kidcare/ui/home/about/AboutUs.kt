@@ -192,7 +192,7 @@ fun TeamMemberCard(member: TeamMember) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 val buttonColor = if (isDarkTheme) ButtonDarkColor else ButtonLightColor
-                val textColor = if (isDarkTheme) TextDarkColor else TextLightColor
+                val textColor = if (isDarkTheme) TextDarkColor else TextDarkColor
 
                 TextButton(
                     onClick = { uriHandler.openUri(member.githubLink) },

@@ -83,11 +83,11 @@ fun SplashScreen(onTimeout: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 AnimatedLogo(
-                    drawableId = R.drawable.assets_logo_kidcare,
+                    drawableId = R.drawable.assets_logo_kidcare_clean,
                     description = "Top Logo",
                     modifier = Modifier
                         .padding(top = 32.dp)
-                        .size(140.dp)
+                        .size(80.dp)
                 )
 
                 AnimatedPartnerSection()
@@ -158,7 +158,7 @@ fun AnimatedPartnerSection() {
         Text(
             text = "Program By",
             style = MaterialTheme.typography.titleMedium,
-            color = Color.Black
+            color = Color.Black.copy(0.4f)
         )
         Row(
             horizontalArrangement = Arrangement.spacedBy(26.dp),
@@ -167,12 +167,17 @@ fun AnimatedPartnerSection() {
             AnimatedImage(
                 drawableId = R.drawable.assets_logo_bangkit_academy,
                 description = "Mitra 1 Logo",
-                modifier = Modifier.size(100.dp)
+                modifier = Modifier.size(75.dp)
+            )
+            AnimatedImage(
+                drawableId = R.drawable.assets_logo_msib,
+                description = "Mitra 2 Logo",
+                modifier = Modifier.size(75.dp)
             )
             AnimatedImage(
                 drawableId = R.drawable.assets_logo_kampus_merdeka,
-                description = "Mitra 2 Logo",
-                modifier = Modifier.size(100.dp)
+                description = "Mitra 3 Logo",
+                modifier = Modifier.size(70.dp)
             )
         }
     }

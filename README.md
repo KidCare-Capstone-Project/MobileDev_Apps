@@ -68,21 +68,153 @@ The team will focus on developing and testing the following features: - Growth M
 - This application is expected to be an innovative solution that can help the government and society in reducing stunting rates and supporting the creation of a healthy and intelligent generation of Indonesia.
 
 ## Screenshots
+
+**<div align="center">Splash Screen</div>**
 <p align="center">
-  <img src="PATH" width="200">
+  <img src="./assets/ss/Screenshot_20241209_181534.png" width="200">
+</p>
+
+**<div align="center">onBoarding</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_182426.png" width="200">
+</p>
+
+**<div align="center">Login Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_182437.png" width="200">
+</p>
+
+**<div align="center">Register Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_182444.png" width="200">
+</p>
+
+**<div align="center">Verification Code Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_182503.png" width="200">
+</p>
+
+**<div align="center">Home Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_181631.png" width="200">
+</p>
+
+**<div align="center">Orders Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_181644.png" width="200">
 </p>
 
 <p align="center">
-  <img src="path" width="200">
+  <img src="./assets/ss/Screenshot_20241209_181655.png" width="200">
+</p>
+
+**<div align="center">Profile Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_181704.png" width="200">
+</p>
+
+**<div align="center">My Account Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_181720.png" width="200">
+</p>
+
+**<div align="center">About Us Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_181731.png" width="200">
+</p>
+
+**<div align="center">Admin Panel Button Screen ( Admin Only Can See )</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_181739.png" width="200">
+</p>
+
+**<div align="center">Admin Panel Screen ( Admin Only Can See )</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_181747.png" width="200">
 </p>
 
 <p align="center">
-  <img src="PATH" width="200">
+  <img src="./assets/ss/Screenshot_20241209_181755.png" width="200">
+</p>
+
+**<div align="center">Detail Data Child Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_181821.png" width="200">
 </p>
 
 <p align="center">
-  <img src="PATH" width="200">
+  <img src="./assets/ss/Screenshot_20241209_181832.png" width="200">
 </p>
+
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_181842.png" width="200">
+</p>
+
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_181906.png" width="200">
+</p>
+
+**<div align="center">Predict Api Version Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_181942.png" width="200">
+</p>
+
+**<div align="center">Predict Model Ml Version Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_181953.png" width="200">
+</p>
+
+**<div align="center">Pregnant Mother Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_182004.png" width="200">
+</p>
+
+**<div align="center">Product Seller Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_182025.png" width="200">
+</p>
+
+**<div align="center">baby food recipe Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_182036.png" width="200">
+</p>
+
+**<div align="center">List Recomended Article Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_182046.png" width="200">
+</p>
+
+**<div align="center">List of articles Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_182056.png" width="200">
+</p>
+
+**<div align="center">Ai Generative By Gemini Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_182220.png" width="200">
+</p>
+
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_182304.png" width="200">
+</p>
+
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_182330.png" width="200">
+</p>
+
+**<div align="center">Youtube Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_182343.png" width="200">
+</p>
+
+**<div align="center">Detail Youtube Screen</div>**
+<p align="center">
+  <img src="./assets/ss/Screenshot_20241209_182356.png" width="200">
+</p>
+
+## Mockup
+
+- SOON
 
 ## Development Roadmap
 - [✓] [Kotlin](https://kotlinlang.org/)
@@ -117,7 +249,28 @@ The team will focus on developing and testing the following features: - Growth M
 - [✓] Can Logout From Profile
 - [✓] Can See About Us in Profile
 - [✓] Option Panel Generative AI & YouTube Health News For Kid Stunting
-- [✓] Ping Sginal Realtime & Realtime Clock Digital
+- [✓] Ping Signal Realtime & Realtime Clock Digital
+- [✓] Enhanced Splash Screen
+- [✓] Refined Banner Carousel Size on Home Screen
+- [✓] Integrated Key Features on Home Screen (Prevention of Stunting, Stunting Management, Product Information, MPASI Recipes)
+- [✓] Added Show/Hide Destination Bar Button
+- [✓] Token Expiry Validation on Home Screen
+- [✓] Improved UI for Add Child Profile Screen
+- [✓] Transition from "Favorite" Section to "Orders" Section
+- [✓] Created Tab Row for Order Management
+- [✓] Enhanced Core Features: Online and Offline Prediction
+- [✓] Improved UI for YouTube Health Section
+- [✓] UI Enhancements for Adding Posters
+- [✓] UI Enhancements for Adding Products and Brands
+- [✓] Feature for Adding MPASI Recipes
+- [✓] Feature for Adding Menu Recipes
+- [✓] Feature for Managing Incoming Order Recipes
+- [✓] Feature for Adding "Menu of the Day" and "Today’s Activities"
+- [✓] Notification Reminder for Today’s Menu
+- [✓] Interactive Child Photo Feature in Child Profile
+- [✓] Verification Code Update from 6-Digit to 4-Digit and Email Display
+- [✓] Local Data Storage for Offline Predictions
+- [✓] Online Predictions
 
 ## Requirement
 * Android Studio LadyBug

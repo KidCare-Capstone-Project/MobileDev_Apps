@@ -87,7 +87,7 @@ fun ChildProfileSection(navController: NavController) {
                     onClick = { navController.navigate(MainDestinations.ADD_CHILD_PROFILE_ROUTE) },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isSystemInDarkTheme()) ButtonDarkColor else ButtonLightColor,
-                        contentColor = if (isSystemInDarkTheme()) TextDarkColor else TextLightColor
+                        contentColor = if (isSystemInDarkTheme()) TextDarkColor else TextDarkColor
                     ),
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {

@@ -19,22 +19,24 @@ import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 import kotlin.random.Random
 
-class FunLoginEmail : ViewModel() {
+class FunLoginEmail() : ViewModel() {
+
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState
 
+    // Ubah menjadi kode 4 digit
     private fun generateRandomCode(): String {
-        return Random.nextInt(100000, 999999).toString()
+        return Random.nextInt(1000, 9999).toString()
     }
 
     private fun sendEmail(receiverEmail: String, verificationCode: String) {
         viewModelScope.launch {
             try {
                 val senderEmail = "kidcarex@gmail.com"
-                val senderPassword = "mmgvsuyxhqsoxxtc" // **Important:** Store credentials securely!
+                val senderPassword = "mmgvsuyxhqsoxxtc" // Pastikan kredensial disimpan dengan aman
                 val host = "smtp.gmail.com"
 
                 val properties: Properties = System.getProperties().apply {
@@ -59,7 +61,77 @@ class FunLoginEmail : ViewModel() {
                 val mimeMessage = MimeMessage(session).apply {
                     addRecipient(Message.RecipientType.TO, InternetAddress(receiverEmail))
                     subject = "Your Verification Code"
-                    setText("Your verification code is: $verificationCode")
+                    setContent(
+                        """
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+          <title>Verification Code</title>
+          <style>
+            body {
+              background-color: #f4f4f4;
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+            }
+            .container {
+              background-color: #ffffff;
+              border-radius: 5px;
+              padding: 20px;
+              max-width: 600px;
+              margin: auto;
+            }
+            h1 {
+              color: #333333;
+              font-size: 22px;
+              margin-bottom: 20px;
+            }
+            p {
+              color: #555555;
+              font-size: 16px;
+              line-height: 1.6;
+              margin: 10px 0;
+            }
+            .code {
+              display: inline-block;
+              font-size: 24px;
+              font-weight: bold;
+              color: #007BFF;
+              background: #f0f8ff;
+              padding: 10px 15px;
+              border-radius: 4px;
+              margin: 20px 0;
+              text-decoration: none;
+            }
+            .footer {
+              font-size: 14px;
+              color: #999999;
+              margin-top: 30px;
+              border-top: 1px solid #eeeeee;
+              padding-top: 15px;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>Your Verification Code</h1>
+            <p>Hi,</p>
+            <p>Thank you for signing up! Please use the code below to verify your account:</p>
+            <p class="code">$verificationCode</p>
+            <p>If you did not request this, you can safely ignore this email.</p>
+            <p>Best Regards,<br><strong>KidCare</strong></p>
+            <div class="footer">
+              <p>If you have any questions, feel free to <a href="mailto:kidcarex@gmail.com">contact us</a>.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+        """.trimIndent(),
+                        "text/html; charset=utf-8"
+                    )
                 }
 
                 withContext(Dispatchers.IO) {
@@ -112,7 +184,7 @@ class FunLoginEmail : ViewModel() {
                     val savedCode = document.getString("verificationCode")
                     val savedTimestamp = document.getLong("timestamp") ?: 0
                     val currentTime = System.currentTimeMillis()
-                    val expirationTime = 5 * 60 * 1000 // 5 minutes
+                    val expirationTime = 5 * 60 * 1000 // 5 menit
 
                     if (inputCode == savedCode && (currentTime - savedTimestamp) < expirationTime) {
                         firestore.collection("verificationCodes").document(email).delete()
@@ -155,7 +227,6 @@ class FunLoginEmail : ViewModel() {
             }
     }
 
-    // Assign User Role and Store Data in Firestore
     private fun assignUserRole(user: FirebaseUser) {
         val adminEmails = listOf(
             "akunstoragex@gmail.com",
@@ -191,7 +262,6 @@ class FunLoginEmail : ViewModel() {
             }
     }
 
-    // Handle Login Button Click
     fun onLoginClick(email: String, password: String) {
         if (password.length >= 8) {
             _uiState.value = _uiState.value.copy(loading = true)
@@ -210,17 +280,14 @@ class FunLoginEmail : ViewModel() {
         }
     }
 
-    // Handle General Dialog Dismiss
     fun dismissDialog() {
         _uiState.value = _uiState.value.copy(dialogVisible = false)
     }
 
-    // Handle Verification Dialog Dismiss
     fun dismissVerificationDialog() {
         _uiState.value = _uiState.value.copy(verificationDialogVisible = false)
     }
 
-    // UI State Data Class
     data class LoginUiState(
         val email: String = "",
         val password: String = "",

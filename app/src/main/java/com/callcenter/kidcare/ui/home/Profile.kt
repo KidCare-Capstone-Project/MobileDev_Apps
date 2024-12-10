@@ -49,6 +49,7 @@ import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import com.callcenter.kidcare.R
 import com.callcenter.kidcare.data.LocaleManager
+import com.callcenter.kidcare.model.SharedPreferencesHelper
 import com.callcenter.kidcare.ui.components.KidCareCard
 import com.callcenter.kidcare.ui.funcauth.FunLoginGoogle
 import com.callcenter.kidcare.ui.theme.*
@@ -448,9 +449,9 @@ fun ErrorAlertDialog(message: String, onDismiss: () -> Unit) {
                 tint = FunctionalRed
             )
         },
-        containerColor = if (isSystemInDarkTheme()) Neutral4.copy(alpha = 0.85f) else MinimalAccent.copy(alpha = 0.85f),
-        titleContentColor = if (isSystemInDarkTheme()) WhiteColor else DarkText,
-        textContentColor = if (isSystemInDarkTheme()) WhiteColor else DarkText
+        containerColor = if (isSystemInDarkTheme()) Neutral4.copy(alpha = 0.85f) else Neutral4.copy(alpha = 0.85f),
+        titleContentColor = if (isSystemInDarkTheme()) WhiteColor else WhiteColor,
+        textContentColor = if (isSystemInDarkTheme()) WhiteColor else WhiteColor
     )
 }
 
@@ -486,9 +487,9 @@ fun DeleteConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
                 tint = FunctionalRed
             )
         },
-        containerColor = if (isSystemInDarkTheme()) Neutral4.copy(alpha = 0.85f) else MinimalAccent.copy(alpha = 0.85f),
-        titleContentColor = if (isSystemInDarkTheme()) WhiteColor else DarkText,
-        textContentColor = if (isSystemInDarkTheme()) WhiteColor else DarkText
+        containerColor = if (isSystemInDarkTheme()) Neutral4.copy(alpha = 0.85f) else Neutral4.copy(alpha = 0.85f),
+        titleContentColor = if (isSystemInDarkTheme()) WhiteColor else WhiteColor,
+        textContentColor = if (isSystemInDarkTheme()) WhiteColor else WhiteColor
     )
 }
 
@@ -496,8 +497,14 @@ fun DeleteConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
  * Fungsi untuk menangani logout dengan penanganan error
  */
 fun handleLogoutWithError(context: Context, onError: (String) -> Unit) {
+
+    lateinit var auth: FirebaseAuth
+
     try {
+        auth = FirebaseAuth.getInstance()
         FirebaseAuth.getInstance().signOut()
+        auth.signOut()
+        SharedPreferencesHelper.clearToken(context)
 
         if (context is ComponentActivity) {
             val intent = Intent(context, FunLoginGoogle::class.java)
@@ -505,7 +512,7 @@ fun handleLogoutWithError(context: Context, onError: (String) -> Unit) {
             context.finish()
         }
     } catch (e: Exception) {
-        onError(e.message ?: "Terjadi kesalahan saat keluar.")
+        onError(e.message ?: "An error occurred during logout.")
     }
 }
 

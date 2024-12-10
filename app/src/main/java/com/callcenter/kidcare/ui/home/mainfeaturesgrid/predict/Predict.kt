@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,36 +30,26 @@ import com.callcenter.kidcare.data.ChildProfile
 import com.callcenter.kidcare.ui.components.KidCareCard
 import com.callcenter.kidcare.ui.home.mainfeaturesgrid.predict.viewmodel.PredictViewModel
 import com.callcenter.kidcare.ui.navigation.MainDestinations
-import com.callcenter.kidcare.ui.theme.ButtonDarkColor
-import com.callcenter.kidcare.ui.theme.ButtonLightColor
-import com.callcenter.kidcare.ui.theme.DarkText
-import com.callcenter.kidcare.ui.theme.KidCareTheme
-import com.callcenter.kidcare.ui.theme.MinimalAccent
-import com.callcenter.kidcare.ui.theme.MinimalTextDark
-import com.callcenter.kidcare.ui.theme.MinimalTextLight
-import com.callcenter.kidcare.ui.theme.Neutral4
-import com.callcenter.kidcare.ui.theme.Ocean4
-import com.callcenter.kidcare.ui.theme.Ocean7
-import com.callcenter.kidcare.ui.theme.WhiteColor
-import com.google.firebase.auth.FirebaseAuth
+import com.callcenter.kidcare.ui.theme.*
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun Predict(navController: NavController) {
     val viewModel: PredictViewModel = viewModel()
-    val uid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     val context = LocalContext.current
     var children by remember { mutableStateOf<List<ChildProfile>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var showDialog by remember { mutableStateOf(false) }
 
-    // Definisikan isDarkMode
     val isDarkMode = isSystemInDarkTheme()
+
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var childToDelete by remember { mutableStateOf<ChildProfile?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.loadModel(context)
-        viewModel.fetchChildrenData(uid) { fetchedChildren ->
+        viewModel.fetchChildrenData { fetchedChildren ->
             children = fetchedChildren
             isLoading = false
             if (children.isEmpty()) {
@@ -161,9 +153,9 @@ fun Predict(navController: NavController) {
                                 Text("Nanti")
                             }
                         },
-                        containerColor = if (isDarkMode) Neutral4.copy(alpha = 0.85f) else MinimalAccent.copy(alpha = 0.85f),
-                        titleContentColor = if (isDarkMode) WhiteColor else DarkText,
-                        textContentColor = if (isDarkMode) WhiteColor else DarkText
+                        containerColor = if (isSystemInDarkTheme()) Neutral4.copy(alpha = 0.85f) else Neutral4.copy(alpha = 0.85f),
+                        titleContentColor = if (isSystemInDarkTheme()) WhiteColor else WhiteColor,
+                        textContentColor = if (isSystemInDarkTheme()) WhiteColor else WhiteColor
                     )
                 }
             }
@@ -192,9 +184,56 @@ fun Predict(navController: NavController) {
                             )
                         ) {
                             val predictions = viewModel.predict(child)
-                            ChildCard(child = child, predictions = predictions)
+                            ChildCard(
+                                child = child,
+                                predictions = predictions,
+                                onDelete = {
+                                    showDeleteDialog = true
+                                    childToDelete = child
+                                }
+                            )
                         }
                     }
+                }
+
+                if (showDeleteDialog && childToDelete != null) {
+                    AlertDialog(
+                        onDismissRequest = { showDeleteDialog = false },
+                        title = { Text(text = "Hapus Data Anak") },
+                        text = { Text(text = "Apakah Anda yakin ingin menghapus data anak ini?") },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    showDeleteDialog = false
+                                    childToDelete?.let {
+                                        viewModel.deleteChild(it) {
+                                            viewModel.fetchChildrenData { fetchedChildren ->
+                                                children = fetchedChildren
+                                            }
+                                        }
+                                    }
+                                },
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = Color(0xFFD32F2F)
+                                )
+                            ) {
+                                Text("Hapus")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = { showDeleteDialog = false },
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = Color(0xFF00796B)
+                                )
+                            ) {
+                                Text("Batal")
+                            }
+                        },
+                        containerColor = if (isSystemInDarkTheme()) Neutral4.copy(alpha = 0.85f) else Neutral4.copy(alpha = 0.85f),
+                        titleContentColor = if (isSystemInDarkTheme()) WhiteColor else WhiteColor,
+                        textContentColor = if (isSystemInDarkTheme()) WhiteColor else WhiteColor
+                    )
                 }
             }
         }
@@ -202,7 +241,7 @@ fun Predict(navController: NavController) {
 }
 
 @Composable
-fun ChildCard(child: ChildProfile, predictions: FloatArray?) {
+fun ChildCard(child: ChildProfile, predictions: FloatArray?, onDelete: () -> Unit) {
 
     val isLight = !KidCareTheme.colors.isDark
 
@@ -213,50 +252,61 @@ fun ChildCard(child: ChildProfile, predictions: FloatArray?) {
         shape = MaterialTheme.shapes.medium,
         elevation = 4.dp
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = child.name,
-                style = MaterialTheme.typography.titleLarge,
-                color = if (isLight) MinimalTextLight else MinimalTextDark
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Usia: ${child.getAgeInMonths()} bulan",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            if (predictions != null) {
-                if (predictions.size == 2) {
-                    val stuntedPercentage = predictions[1] * 100
-                    val notStuntedPercentage = predictions[0] * 100
-                    Text(
-                        text = "Prediksi Stunting: ${String.format("%.2f", stuntedPercentage)}%",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Red
-                    )
-                    Text(
-                        text = "Prediksi Tidak Stunting: ${String.format("%.2f", notStuntedPercentage)}%",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Green
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = child.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = if (isLight) MinimalTextLight else MinimalTextDark
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Usia: ${child.getAgeInMonths()} bulan",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                if (predictions != null) {
+                    if (predictions.size == 2) {
+                        val stuntedPercentage = predictions[1] * 100
+                        val notStuntedPercentage = predictions[0] * 100
+                        Text(
+                            text = "Prediksi Stunting: ${String.format("%.2f", stuntedPercentage)}%",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Red
+                        )
+                        Text(
+                            text = "Prediksi Tidak Stunting: ${String.format("%.2f", notStuntedPercentage)}%",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Green
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    PredictionChart(predictions = predictions)
-                } else if (predictions.size == 1) {
-                    val stuntedProbability = predictions[0]
-                    val stuntedPercentage = stuntedProbability * 100
-                    val notStuntedPercentage = (1 - stuntedProbability) * 100
-                    Text(
-                        text = "Prediksi Stunting: ${String.format("%.2f", stuntedPercentage)}%",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Red
-                    )
-                    Text(
-                        text = "Prediksi Tidak Stunting: ${String.format("%.2f", notStuntedPercentage)}%",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Green
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    PredictionChart(predictions = floatArrayOf(notStuntedPercentage, stuntedPercentage))
+                        PredictionChart(predictions = predictions)
+                    } else if (predictions.size == 1) {
+                        val stuntedProbability = predictions[0]
+                        val stuntedPercentage = stuntedProbability * 100
+                        val notStuntedPercentage = (1 - stuntedProbability) * 100
+                        Text(
+                            text = "Prediksi Stunting: ${String.format("%.2f", stuntedPercentage)}%",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Red
+                        )
+                        Text(
+                            text = "Prediksi Tidak Stunting: ${String.format("%.2f", notStuntedPercentage)}%",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Green
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        PredictionChart(predictions = floatArrayOf(notStuntedPercentage, stuntedPercentage))
+                    } else {
+                        Text(
+                            text = "Prediksi tidak tersedia",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray
+                        )
+                    }
                 } else {
                     Text(
                         text = "Prediksi tidak tersedia",
@@ -264,11 +314,11 @@ fun ChildCard(child: ChildProfile, predictions: FloatArray?) {
                         color = Color.Gray
                     )
                 }
-            } else {
-                Text(
-                    text = "Prediksi tidak tersedia",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
+            }
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Hapus Anak"
                 )
             }
         }

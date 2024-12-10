@@ -19,7 +19,7 @@ import com.callcenter.kidcare.ui.theme.TextLightColor
 fun AdminButton(navController: NavHostController) {
     val isDarkTheme = isSystemInDarkTheme()
     val buttonColor = if (isDarkTheme) ButtonDarkColor else ButtonLightColor
-    val textColor = if (isDarkTheme) TextDarkColor else TextLightColor
+    val textColor = if (isDarkTheme) TextDarkColor else TextDarkColor
 
     Button(
         onClick = {

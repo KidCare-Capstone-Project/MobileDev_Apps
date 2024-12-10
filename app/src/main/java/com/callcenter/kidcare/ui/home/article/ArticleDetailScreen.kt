@@ -40,6 +40,9 @@ import coil.request.ImageRequest
 import com.callcenter.kidcare.R
 import com.callcenter.kidcare.ui.home.article.viewmodel.ArticleDetailViewModel
 import com.callcenter.kidcare.ui.home.article.viewmodel.BookmarkViewModel
+import com.callcenter.kidcare.ui.theme.DarkBlue
+import com.callcenter.kidcare.ui.theme.KidCareTheme
+import com.callcenter.kidcare.ui.theme.LightBlue
 import com.callcenter.kidcare.ui.theme.MinimalBackgroundDark
 import com.callcenter.kidcare.ui.theme.MinimalBackgroundLight
 import com.callcenter.kidcare.ui.theme.MinimalTextDark
@@ -97,6 +100,8 @@ fun ArticleDetailScreen(
     val backgroundColor = if (isSystemInDarkTheme()) MinimalBackgroundDark else MinimalBackgroundLight
     val textColor = if (isSystemInDarkTheme()) MinimalTextDark else MinimalTextLight
 
+    val isLight = !KidCareTheme.colors.isDark
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -107,7 +112,7 @@ fun ArticleDetailScreen(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
-                            tint = textColor
+                            tint = if (isLight) DarkBlue else LightBlue
                         )
                     }
                 },
@@ -271,11 +276,11 @@ fun ArticleDetailScreen(
                             ) {
                                 Row(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(24.dp))
+                                        .clip(RoundedCornerShape(16.dp)) // Mengecilkan dari 24.dp ke 16.dp
                                         .background(
                                             if (isSystemInDarkTheme()) MinimalBackgroundLight else MinimalBackgroundDark
                                         )
-                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                        .padding(horizontal = 8.dp, vertical = 4.dp), // Mengecilkan padding dari 12.dp & 8.dp ke 8.dp & 4.dp
                                     horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -284,11 +289,12 @@ fun ArticleDetailScreen(
                                         Icon(
                                             imageVector = if (userHasLoved) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                                             contentDescription = "Love",
-                                            tint = if (userHasLoved) Ocean8 else Color.Gray
+                                            tint = if (userHasLoved) Ocean8 else Color.Gray,
+                                            modifier = Modifier.size(20.dp) // Mengecilkan ukuran ikon, misalnya dari default ke 20.dp
                                         )
                                     }
 
-                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Spacer(modifier = Modifier.width(8.dp)) // Mengecilkan jarak antar ikon dari 16.dp ke 8.dp
 
                                     // Tombol Bookmark
                                     IconButton(onClick = {
@@ -298,7 +304,8 @@ fun ArticleDetailScreen(
                                         Icon(
                                             imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
                                             contentDescription = if (isBookmarked) "Unbookmark" else "Bookmark",
-                                            tint = if (isBookmarked) Ocean8 else Color.Gray
+                                            tint = if (isBookmarked) Ocean8 else Color.Gray,
+                                            modifier = Modifier.size(20.dp) // Mengecilkan ukuran ikon bookmark
                                         )
                                     }
                                 }

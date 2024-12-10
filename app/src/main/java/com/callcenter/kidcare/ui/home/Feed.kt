@@ -3,6 +3,7 @@
 package com.callcenter.kidcare.ui.home
 
 import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -17,7 +18,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.callcenter.kidcare.model.SharedPreferencesHelper
 import com.callcenter.kidcare.ui.components.KidCareSurface
+import com.callcenter.kidcare.ui.funcauth.FunLoginGoogle
 import com.callcenter.kidcare.ui.home.article.ArticleRecommendation
 import com.callcenter.kidcare.ui.home.childprofile.ChildProfileSection
 import com.callcenter.kidcare.ui.home.imagecarousel.ImageCarousel
@@ -27,18 +30,23 @@ import com.callcenter.kidcare.ui.theme.KidCareTheme
 import com.google.firebase.auth.FirebaseAuth
 
 @RequiresApi(Build.VERSION_CODES.R)
-
 @Composable
 fun Feed(
     modifier: Modifier = Modifier,
-    navController: NavController // Add navController here
+    navController: NavController
 ) {
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
     var showDialog by remember { mutableStateOf(sharedPreferences.getBoolean("show_welcome_dialog", true)) }
 
+    val token = SharedPreferencesHelper.getToken(context)
+    val isTokenValid = token != null && !SharedPreferencesHelper.isTokenExpired(context)
+
     val firebaseUser = FirebaseAuth.getInstance().currentUser
     val userName = firebaseUser?.displayName ?: "User"
+
+    // Cek apakah pengguna login via email
+    val isEmailLogin = firebaseUser?.providerData?.any { it.providerId == "password" } ?: false
 
     if (showDialog) {
         WelcomeDialog(userName = userName, onDismiss = {
@@ -47,7 +55,22 @@ fun Feed(
         })
     }
 
-    FeedContent(modifier, navController)
+    if (isTokenValid || isEmailLogin) {
+        // Akses diizinkan jika token valid atau login via email
+        FeedContent(modifier, navController)
+    } else {
+        // Jika token tidak valid dan bukan login via email, arahkan ke FunLoginGoogle
+        LaunchedEffect(Unit) {
+            // Hapus token yang tidak valid
+            SharedPreferencesHelper.clearToken(context)
+            // Buat intent untuk memulai aktivitas FunLoginGoogle
+            val intent = Intent(context, FunLoginGoogle::class.java).apply {
+                // Tambahkan flag untuk menghapus aktivitas sebelumnya dari back stack
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            context.startActivity(intent)
+        }
+    }
 }
 
 @Composable

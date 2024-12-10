@@ -70,15 +70,15 @@ fun AdminPanel(navController: NavController, userViewModel: UserViewModel = view
                             )
                         }
                     },
-                    actions = {
-                        IconButton(onClick = { /* Handle settings click */ }) {
-                            Icon(
-                                Icons.Filled.Settings,
-                                contentDescription = "Settings",
-                                tint = if (isLight) DarkBlue else LightBlue
-                            )
-                        }
-                    },
+//                    actions = {
+//                        IconButton(onClick = { /* Handle settings click */ }) {
+//                            Icon(
+//                                Icons.Filled.Settings,
+//                                contentDescription = "Settings",
+//                                tint = if (isLight) DarkBlue else LightBlue
+//                            )
+//                        }
+//                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = if (isLight) MinimalBackgroundLight else MinimalBackgroundDark,
                         titleContentColor = if (isLight) MinimalTextLight else MinimalTextDark,
@@ -163,9 +163,12 @@ fun AdminContent(navController: NavController, isLight: Boolean) {
 
         val adminFunctions = listOf(
             AdminFunction("Tambah Artikel V1", Icons.Filled.Add),
-            AdminFunction("Tambah Banner", Icons.Filled.Image),
+            AdminFunction("Tambah Resep Mpasi", Icons.Filled.AddCircleOutline),
+            AdminFunction("Tambah Poster", Icons.Filled.Image),
+            AdminFunction("Tambah Resep Menu", Icons.Filled.RestaurantMenu),
             AdminFunction("Tambah Produk", Icons.Filled.AddShoppingCart),
             AdminFunction("Users", Icons.Filled.Person),
+            AdminFunction("Orderan Masuk", Icons.Filled.ShoppingCart)
         )
 
         LazyColumn(
@@ -212,9 +215,12 @@ fun AdminFunctionCard(function: AdminFunction, isLight: Boolean, navController: 
 
                     when (function.name) {
                         "Tambah Artikel V1" -> navController.navigate("add_article")
-                        "Tambah Banner" -> navController.navigate("add_banner")
+                        "Tambah Resep Mpasi" -> navController.navigate("add_resep_mpasi")
+                        "Tambah Poster" -> navController.navigate("add_poster")
+                        "Tambah Resep Menu" -> navController.navigate("add_resep_menu")
                         "Tambah Produk" -> navController.navigate("add_product")
                         "Users" -> navController.navigate("users")
+                        "Orderan Masuk" -> navController.navigate("incoming_orders")
                         else -> {}
                     }
                 }

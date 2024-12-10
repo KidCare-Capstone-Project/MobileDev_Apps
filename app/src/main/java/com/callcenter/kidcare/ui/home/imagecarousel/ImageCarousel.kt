@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -31,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -90,47 +92,54 @@ fun ImageCarousel() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        HorizontalPager(
-            count = images.size,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(carouselHeight),
-            state = pagerState
-        ) { page ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        start = if (page == 0) 0.dp else 8.dp,
-                        end = if (page == images.size - 1) 0.dp else 8.dp
-                    )
-            ) {
-                KidCareCard(
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    val painter = rememberAsyncImagePainter(model = images[page])
-                    val painterState = painter.state
-
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        Image(
-                            painter = painter,
-                            contentDescription = "Carousel Image $page",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            HorizontalPager(
+                count = images.size,
+                modifier = Modifier.fillMaxSize(),
+                state = pagerState
+            ) { page ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            start = if (page == 0) 0.dp else 8.dp,
+                            end = if (page == images.size - 1) 0.dp else 8.dp
                         )
+                ) {
+                    KidCareCard(
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.wrapContentSize()
+                    ) {
+                        val painter = rememberAsyncImagePainter(model = images[page])
+                        Box(modifier = Modifier.wrapContentSize()) {
+                            Image(
+                                painter = painter,
+                                contentDescription = "Carousel Image $page",
+                                modifier = Modifier
+                                    .wrapContentSize()
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.None
+                            )
 
-                        if (painterState is AsyncImagePainter.State.Loading ||
-                            painterState is AsyncImagePainter.State.Error
-                        ) {
-                            ShimmerEffect(modifier = Modifier.fillMaxSize())
+                            val painterState = painter.state
+                            if (painterState is AsyncImagePainter.State.Loading ||
+                                painterState is AsyncImagePainter.State.Error
+                            ) {
+                                ShimmerEffect(modifier = Modifier.matchParentSize())
+                            }
                         }
                     }
                 }
             }
+
+            // PagerIndicator sekarang berada di dalam Box bersama HorizontalPager
+            PagerIndicator(currentPage = pagerState.currentPage, totalPages = images.size)
         }
-        Spacer(modifier = Modifier.height(6.dp))
-        PagerIndicator(currentPage = pagerState.currentPage, totalPages = images.size)
     }
 }
 
@@ -171,33 +180,28 @@ fun PagerIndicator(
     currentPage: Int,
     totalPages: Int
 ) {
-    Box(
+    Row(
         modifier = Modifier
-            .fillMaxWidth()
             .padding(vertical = 8.dp),
-        contentAlignment = Alignment.Center
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            for (i in 0 until totalPages) {
-                val isSelected = i == currentPage
-                val indicatorWidth by animateDpAsState(
-                    targetValue = if (isSelected) 24.dp else 12.dp,
-                    animationSpec = tween(durationMillis = 300), label = ""
-                )
+        for (i in 0 until totalPages) {
+            val isSelected = i == currentPage
+            val indicatorWidth by animateDpAsState(
+                targetValue = if (isSelected) 24.dp else 12.dp,
+                animationSpec = tween(durationMillis = 300), label = ""
+            )
 
-                Box(
-                    modifier = Modifier
-                        .height(8.dp)
-                        .width(indicatorWidth)
-                        .background(
-                            color = if (isSelected) Color(0xFF4285F4) else Color.Gray.copy(alpha = 0.5f),
-                            shape = RoundedCornerShape(4.dp)
-                        )
-                )
-            }
+            Box(
+                modifier = Modifier
+                    .height(8.dp)
+                    .width(indicatorWidth)
+                    .background(
+                        color = if (isSelected) Color(0xFF4285F4) else Color.Gray.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(4.dp)
+                    )
+            )
         }
     }
 }

@@ -58,6 +58,8 @@ import com.callcenter.kidcare.ui.components.KidCareCard
 import com.callcenter.kidcare.ui.components.YouTubeAppBar
 import com.callcenter.kidcare.ui.theme.DarkText
 import com.callcenter.kidcare.ui.theme.KidCareTheme
+import com.callcenter.kidcare.ui.theme.Ocean8
+import com.callcenter.kidcare.ui.theme.Ocean9
 import com.callcenter.kidcare.ui.theme.WhiteColor
 import retrofit2.Call
 import retrofit2.Callback
@@ -368,7 +370,7 @@ fun VideoItemRow(video: VideoItem, onClick: (String) -> Unit) {
             ) {
                 Text(
                     text = video.snippet.title,
-                    color = colors.textPrimary,
+                    color = Ocean9,
                     style = typography.titleMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -386,45 +388,45 @@ fun VideoItemRow(video: VideoItem, onClick: (String) -> Unit) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Outlined.ThumbUp,
-                            contentDescription = "Likes",
-                            tint = colors.brand,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = video.statistics?.likeCount ?: "0",
-                            color = colors.textPrimary,
-                            style = typography.bodySmall
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Icon(
-                            imageVector = Icons.Outlined.RemoveRedEye,
-                            contentDescription = "Views",
-                            tint = colors.brand,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = video.statistics?.viewCount ?: "0",
-                            color = colors.textPrimary,
-                            style = typography.bodySmall
-                        )
-                    }
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "More Options",
-                        tint = colors.textPrimary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+//                Row(
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    horizontalArrangement = Arrangement.SpaceBetween,
+//                    modifier = Modifier.fillMaxWidth()
+//                ) {
+//                    Row(verticalAlignment = Alignment.CenterVertically) {
+//                        Icon(
+//                            imageVector = Icons.Outlined.ThumbUp,
+//                            contentDescription = "Likes",
+//                            tint = colors.brand,
+//                            modifier = Modifier.size(20.dp)
+//                        )
+//                        Spacer(modifier = Modifier.width(4.dp))
+//                        Text(
+//                            text = video.statistics?.likeCount ?: "0",
+//                            color = Ocean8,
+//                            style = typography.bodySmall
+//                        )
+//                        Spacer(modifier = Modifier.width(16.dp))
+//                        Icon(
+//                            imageVector = Icons.Outlined.RemoveRedEye,
+//                            contentDescription = "Views",
+//                            tint = colors.brand,
+//                            modifier = Modifier.size(20.dp)
+//                        )
+//                        Spacer(modifier = Modifier.width(4.dp))
+//                        Text(
+//                            text = video.statistics?.viewCount ?: "0",
+//                            color = Ocean8,
+//                            style = typography.bodySmall
+//                        )
+//                    }
+//                    Icon(
+//                        imageVector = Icons.Default.MoreVert,
+//                        contentDescription = "More Options",
+//                        tint = colors.textPrimary,
+//                        modifier = Modifier.size(20.dp)
+//                    )
+//                }
             }
         }
     }

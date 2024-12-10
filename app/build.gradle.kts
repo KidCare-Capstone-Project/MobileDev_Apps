@@ -6,6 +6,7 @@ plugins {
 
     id("com.google.gms.google-services")
     kotlin("plugin.serialization") version "2.0.20"
+    kotlin("kapt")
 }
 
 android {
@@ -16,8 +17,8 @@ android {
         applicationId = "com.callcenter.kidcare"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.5"
+        versionCode = 2
+        versionName = "2.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "GEMINI_API_KEY", "\"${System.getenv("GEMINI_API_KEY") ?: "AIzaSyDYMwp3N_BGpRCCk-Nfu57SdOLHbPZS55U"}\"")
     }
@@ -84,6 +85,7 @@ android {
 dependencies {
     implementation(libs.firebase.database)
     implementation(libs.firebase.firestore)
+    implementation(libs.androidx.storage)
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
@@ -143,12 +145,21 @@ dependencies {
 
     implementation(libs.accompanist.placeholder.material)
     implementation(libs.firebase.storage.ktx)
+//
+//    implementation("com.google.android.gms:play-services-tflite-java:16.3.0")
+//    implementation("com.google.android.gms:play-services-tflite-gpu:16.3.0")
+//
+//    implementation("org.tensorflow:tensorflow-lite:2.16.1")
+    implementation(libs.tensorflow.lite.support)
 
-    implementation("com.google.android.gms:play-services-tflite-java:16.3.0")
-    implementation("com.google.android.gms:play-services-tflite-gpu:16.3.0")
+    implementation(libs.compose.m3)
+    implementation(libs.uikit)
+//    implementation("com.midtrans:uikit:2.3.0")
 
-    implementation("org.tensorflow:tensorflow-lite:2.16.1")
-    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
+    implementation(libs.androidx.room.ktx)
+    kapt(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.runtime)
 
-    implementation("com.patrykandpatrick.vico:compose-m3:1.15.0")
+    implementation(libs.logging.interceptor)
+    implementation(libs.java.jwt)
 }

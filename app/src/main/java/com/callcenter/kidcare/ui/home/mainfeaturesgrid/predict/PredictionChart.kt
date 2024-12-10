@@ -28,7 +28,7 @@ fun PredictionChart(predictions: FloatArray) {
 
     val chartEntryModelProducer = ChartEntryModelProducer(chartEntries)
 
-    val barChart = lineChart()
+    val lineChart = lineChart()
 
     val bottomAxis = bottomAxis(
         valueFormatter = AxisValueFormatter { value, _ ->
@@ -42,7 +42,7 @@ fun PredictionChart(predictions: FloatArray) {
             .height(200.dp)
     ) {
         Chart(
-            chart = barChart,
+            chart = lineChart,
             chartModelProducer = chartEntryModelProducer,
             modifier = Modifier.fillMaxSize(),
             startAxis = null,

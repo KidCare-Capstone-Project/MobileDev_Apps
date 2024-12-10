@@ -16,6 +16,8 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.*
 import androidx.compose.ui.tooling.preview.Preview
 import com.callcenter.kidcare.R
+import com.callcenter.kidcare.data.LocaleManager
+import com.callcenter.kidcare.model.SharedPreferencesHelper
 import com.callcenter.kidcare.ui.KidCareApp
 import com.callcenter.kidcare.ui.theme.KidCareTheme
 import com.callcenter.kidcare.ui.uionly.GoogleLoginScreen
@@ -58,31 +60,46 @@ class FunLoginGoogle : ComponentActivity() {
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
 
-        if (auth.currentUser != null) {
-            setContent { KidCareApp() }
-        } else {
-            @Suppress("DEPRECATION") val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build()
+        val selectedLanguage = LocaleManager.getLanguage(this)
 
-            @Suppress("DEPRECATION")
-            googleSignInClient = GoogleSignIn.getClient(this, gso)
+        if (SharedPreferencesHelper.isTokenAvailable(this)) {
+            if (SharedPreferencesHelper.isTokenExpired(this)) {
+                auth.signOut()
+            } else {
+                setContent { KidCareApp() }
+                return
+            }
+        }
 
-            setContent {
-                KidCareTheme {
-                    GoogleLoginScreen(
-                        onClick = { checkInternetAndSignIn() },
-                        onEmailLoginClick = { navigateToEmailLogin() }
-                    )
-                }
+        setupGoogleSignInClient()
+
+        setContent {
+            KidCareTheme {
+                GoogleLoginScreen(
+                    onClick = { checkInternetAndSignIn() },
+                    onEmailLoginClick = { navigateToEmailLogin() },
+                    selectedLanguage = selectedLanguage
+                )
             }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
+    private fun setupGoogleSignInClient() {
+        @Suppress("DEPRECATION")
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
     private fun checkInternetAndSignIn() {
         if (isInternetAvailable()) {
+            if (!this::googleSignInClient.isInitialized) {
+                setupGoogleSignInClient()
+            }
             signIn()
         } else {
             showNoInternetDialog()
@@ -99,6 +116,8 @@ class FunLoginGoogle : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.R)
     private fun showNoInternetDialog() {
         runOnUiThread {
+            val selectedLanguage = LocaleManager.getLanguage(this) // Ambil bahasa yang dipilih
+
             AlertDialog.Builder(this)
                 .setTitle("No Internet Connection")
                 .setMessage("Please check your internet connection and try again.")
@@ -108,7 +127,9 @@ class FunLoginGoogle : ComponentActivity() {
                         KidCareTheme {
                             GoogleLoginScreen(
                                 onClick = { checkInternetAndSignIn() },
-                                onEmailLoginClick = { navigateToEmailLogin() })
+                                onEmailLoginClick = { navigateToEmailLogin() },
+                                selectedLanguage = selectedLanguage // Tambahkan parameter ini
+                            )
                         }
                     }
                 }
@@ -138,17 +159,24 @@ class FunLoginGoogle : ComponentActivity() {
                             .addOnCompleteListener { tokenTask ->
                                 if (tokenTask.isSuccessful) {
                                     val idToken = tokenTask.result?.token
-                                    // Sekarang Anda memiliki ID Token
+                                    val expirationTime = tokenTask.result?.expirationTimestamp
+
+                                    // Pastikan expirationTime dalam milidetik
+                                    if (idToken != null && expirationTime != null) {
+                                        SharedPreferencesHelper.saveToken(this, idToken, expirationTime * 1000) // Konversi ke milidetik
+                                        Log.d("FunLoginGoogle", "Token disimpan dengan sukses")
+                                    }
+
                                     Log.d("FunLoginGoogle", "ID Token: $idToken")
 
-                                    // TODO: Kirim ID Token ke backend server Anda atau gunakan sesuai kebutuhan
+                                    // Pindahkan setContent ke sini setelah token disimpan
+                                    setContent { KidCareApp() }
                                 } else {
-                                    // Gagal mendapatkan ID Token
                                     Log.e("FunLoginGoogle", "Gagal mendapatkan ID Token", tokenTask.exception)
+                                    // Anda bisa menampilkan dialog kesalahan di sini jika diperlukan
                                 }
                             }
                     }
-                    setContent { KidCareApp() }
                 } else {
                     showSignInFailureDialog(task.exception?.message)
                 }
@@ -218,7 +246,7 @@ class FunLoginGoogle : ComponentActivity() {
                 .setMessage(errorMessage ?: "Unknown error occurred.")
                 .setPositiveButton("Retry") { dialog, _ ->
                     dialog.dismiss()
-                    checkInternetAndSignIn()
+                    checkInternetAndSignIn() // Jangan reset tampilan di sini
                 }
                 .setNegativeButton("Cancel") { dialog, _ ->
                     dialog.dismiss()
@@ -244,6 +272,10 @@ class FunLoginGoogle : ComponentActivity() {
 @Composable
 fun PreviewGoogleLoginScreen() {
     KidCareTheme {
-        GoogleLoginScreen(onClick = {}, onEmailLoginClick = {})
+        GoogleLoginScreen(
+            onClick = {},
+            onEmailLoginClick = {},
+            selectedLanguage = "en" // Tambahkan parameter ini
+        )
     }
 }

@@ -2,7 +2,9 @@ package com.callcenter.kidcare.ui.options.videoDetail
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.os.Build
+import android.text.Spanned
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -12,24 +14,28 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Fullscreen
-import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
+import androidx.core.text.HtmlCompat
 import androidx.core.view.WindowCompat
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -37,6 +43,9 @@ import com.callcenter.kidcare.R
 import com.callcenter.kidcare.data.*
 import com.callcenter.kidcare.ui.components.KidCareCard
 import com.callcenter.kidcare.ui.components.KidCareDivider
+import com.callcenter.kidcare.ui.theme.KidCareTheme.colors
+import com.callcenter.kidcare.ui.theme.Ocean8
+import com.callcenter.kidcare.ui.theme.Ocean9
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
@@ -44,13 +53,14 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+@SuppressLint("SourceLockedOrientationActivity")
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
 fun VideoDetailScreen(videoId: String, onBack: () -> Unit) {
     val context = LocalContext.current
     val activity = remember(context) { context as? Activity }
 
-    var isFullscreen by remember { mutableStateOf(false) }
+    var isFullscreen by rememberSaveable { mutableStateOf(false) }
 
     var videoItem by remember { mutableStateOf<VideoItem?>(null) }
     var isLoading by remember { mutableStateOf(true) }
@@ -65,7 +75,10 @@ fun VideoDetailScreen(videoId: String, onBack: () -> Unit) {
 
     val youTubePlayerView = remember { YouTubePlayerView(context) }
 
-    DisposableEffect(youTubePlayerView) {
+    DisposableEffect(Unit) {
+        // Add YouTubePlayerView to lifecycle observers
+        (context as? androidx.lifecycle.LifecycleOwner)?.lifecycle?.addObserver(youTubePlayerView)
+
         onDispose {
             youTubePlayerView.release()
         }
@@ -78,7 +91,6 @@ fun VideoDetailScreen(videoId: String, onBack: () -> Unit) {
                 errorMessage = error
             } else {
                 videoItem = fetchedVideo
-                // Setelah video berhasil diambil, fetch komentar dan detail channel
                 fetchedVideo?.let { video ->
                     fetchComments(video.id.videoId, apiKey) { fetchedComments, commentError ->
                         if (commentError != null) {
@@ -106,19 +118,25 @@ fun VideoDetailScreen(videoId: String, onBack: () -> Unit) {
     LaunchedEffect(isFullscreen) {
         activity?.let { act ->
             if (isFullscreen) {
+                // Lock orientation to landscape
+                act.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                // Hide system UI
                 WindowCompat.setDecorFitsSystemWindows(act.window, false)
-                act.window.insetsController?.let { controller ->
-                    controller.hide(android.view.WindowInsets.Type.statusBars() or android.view.WindowInsets.Type.navigationBars())
-                    controller.systemBarsBehavior =
-                        android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                act.window.insetsController?.apply {
+                    hide(android.view.WindowInsets.Type.statusBars() or android.view.WindowInsets.Type.navigationBars())
+                    systemBarsBehavior = android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 }
             } else {
+                // Unlock orientation to portrait
+                act.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                // Show system UI
                 WindowCompat.setDecorFitsSystemWindows(act.window, true)
                 act.window.insetsController?.show(android.view.WindowInsets.Type.statusBars() or android.view.WindowInsets.Type.navigationBars())
             }
         }
     }
 
+    // Menangani tombol back
     BackHandler(enabled = !isFullscreen) {
         onBack()
     }
@@ -187,7 +205,6 @@ fun VideoDetailScreen(videoId: String, onBack: () -> Unit) {
                                         modifier = Modifier.padding(bottom = 8.dp)
                                     ) {
                                         if (isLoadingChannel) {
-                                            // Placeholder saat memuat
                                             Icon(
                                                 imageVector = Icons.Default.AccountCircle,
                                                 contentDescription = "User Avatar",
@@ -229,18 +246,21 @@ fun VideoDetailScreen(videoId: String, onBack: () -> Unit) {
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
                                             text = video.snippet.channelTitle,
+                                            color = Ocean9.copy(0.5f),
                                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                                         )
                                     }
 
                                     Text(
                                         text = video.snippet.title,
+                                        color = Ocean8,
                                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                                         modifier = Modifier.padding(bottom = 8.dp)
                                     )
 
                                     Text(
                                         text = video.snippet.description,
+                                        color = colors.textSecondary,
                                         style = MaterialTheme.typography.bodyMedium,
                                         modifier = Modifier
                                             .padding(bottom = 8.dp)
@@ -261,7 +281,9 @@ fun VideoDetailScreen(videoId: String, onBack: () -> Unit) {
                                                 modifier = Modifier.size(20.dp)
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
-                                            Text(text = "${video.statistics?.likeCount ?: 0} Likes")
+                                            Text(
+                                                text = "${video.statistics?.likeCount ?: 0} Likes",
+                                                color = Ocean9.copy(0.5f))
                                         }
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Icon(
@@ -271,7 +293,10 @@ fun VideoDetailScreen(videoId: String, onBack: () -> Unit) {
                                                 modifier = Modifier.size(20.dp)
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
-                                            Text(text = "${video.statistics?.viewCount ?: 0} Views")
+                                            Text(
+                                                text = "${video.statistics?.viewCount ?: 0} Views",
+                                                color = Ocean9.copy(0.5f)
+                                            )
                                         }
                                     }
                                 }
@@ -338,7 +363,7 @@ private fun fetchVideoDetails(
                         id = VideoId(videoDetailItem.id),
                         snippet = videoDetailItem.snippet,
                         statistics = videoDetailItem.statistics,
-                        videoUrl = null // Anda bisa menyesuaikan jika ada URL video
+                        videoUrl = null
                     )
                     onResult(videoItem, null)
                 } else {
@@ -440,13 +465,55 @@ fun CommentItem(userName: String, comment: String, profileImageUrl: String) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = comment,
+                text = htmlToAnnotatedString(comment),
                 style = MaterialTheme.typography.bodySmall,
                 maxLines = Int.MAX_VALUE,
                 overflow = TextOverflow.Ellipsis
             )
         }
     }
+}
+
+fun htmlToAnnotatedString(html: String): AnnotatedString {
+    val spanned: Spanned = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT)
+    val annotatedString = buildAnnotatedString {
+        var start = 0
+        spanned.getSpans(0, spanned.length, Any::class.java).forEach { span ->
+            val spanStart = spanned.getSpanStart(span)
+            val spanEnd = spanned.getSpanEnd(span)
+            if (spanStart > start) {
+                append(spanned.subSequence(start, spanStart))
+            }
+            when (span) {
+                is android.text.style.StyleSpan -> {
+                    when (span.style) {
+                        android.graphics.Typeface.BOLD -> {
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append(spanned.subSequence(spanStart, spanEnd))
+                            }
+                        }
+                        android.graphics.Typeface.ITALIC -> {
+                            withStyle(style = SpanStyle(fontStyle = FontStyle.Italic)) {
+                                append(spanned.subSequence(spanStart, spanEnd))
+                            }
+                        }
+                        // Tambahkan style lainnya sesuai kebutuhan
+                    }
+                }
+                is android.text.style.UnderlineSpan -> {
+                    withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
+                        append(spanned.subSequence(spanStart, spanEnd))
+                    }
+                }
+                // Tambahkan span lainnya seperti ForegroundColorSpan untuk warna, dsb.
+            }
+            start = spanEnd
+        }
+        if (start < spanned.length) {
+            append(spanned.subSequence(start, spanned.length))
+        }
+    }
+    return annotatedString
 }
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -460,7 +527,7 @@ fun FullscreenPlayer(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .zIndex(2f)
+            .zIndex(10f)
     ) {
         AndroidView(
             factory = { youTubePlayerView },

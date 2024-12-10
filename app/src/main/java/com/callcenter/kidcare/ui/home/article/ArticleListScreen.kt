@@ -75,6 +75,8 @@ fun ArticleListScreen(
         return sdf.format(date)
     }
 
+    val isLight = !KidCareTheme.colors.isDark
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -82,7 +84,7 @@ fun ArticleListScreen(
                 navigationIcon = {
                     IconButton(onClick = { onBack() }) {
                         @Suppress("DEPRECATION")
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Kembali", tint = textColor)
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Kembali", tint = if (isLight) DarkBlue else LightBlue)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = backgroundColor)

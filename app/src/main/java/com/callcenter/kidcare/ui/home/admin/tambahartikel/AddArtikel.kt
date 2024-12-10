@@ -25,6 +25,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Article
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Subject
+import androidx.compose.material.icons.filled.Title
 import androidx.compose.material.icons.filled.Topic
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -55,16 +58,13 @@ fun AddArtikel(navController: NavController) {
     val firestore = FirebaseFirestore.getInstance()
     val context = LocalContext.current
 
-    // Precompute background color and its representations
     val backgroundColor = if (isSystemInDarkTheme()) DarkBackgroundColor else LightBackgroundColor
     val backgroundColorHex = backgroundColor.toHex()
     val backgroundColorArgb = backgroundColor.toArgb()
 
-    // Precompute text color
     val textColor = if (isSystemInDarkTheme()) WhiteColor else DarkText
     val textColorHex = textColor.toHex()
 
-    // Declare state variables BEFORE any launchers or functions that use them
     var title by remember { mutableStateOf("") }
     var topic by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
@@ -75,7 +75,6 @@ fun AddArtikel(navController: NavController) {
     var contentDeferred by remember { mutableStateOf<CompletableDeferred<String>?>(null) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
 
-    // Launcher for picking thumbnail image
     val thumbnailPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -85,7 +84,6 @@ fun AddArtikel(navController: NavController) {
         }
     }
 
-    // Launcher for picking images to insert into WebView
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -97,7 +95,6 @@ fun AddArtikel(navController: NavController) {
         }
     }
 
-    // Define custom selection colors
     val customTextSelectionColors = TextSelectionColors(
         handleColor = if (isSystemInDarkTheme()) WhiteColor else DarkText,
         backgroundColor = if (isSystemInDarkTheme()) WhiteColor else DarkText.copy(alpha = 0.4f)
@@ -112,7 +109,7 @@ fun AddArtikel(navController: NavController) {
                 modifier = Modifier
                     .padding(24.dp)
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState()), // Memastikan halaman dapat di-scroll
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
@@ -130,11 +127,14 @@ fun AddArtikel(navController: NavController) {
                     OutlinedTextField(
                         value = title,
                         onValueChange = { title = it },
-                        label = { Text("Judul", color = if (isSystemInDarkTheme()) Ocean4 else Ocean7) },
+                        label = { Text("Judul", color = textColor) },
                         placeholder = { Text("Masukkan judul artikel", color = textColor) },
                         leadingIcon = {
-                            @Suppress("DEPRECATION")
-                            Icon(Icons.Filled.Article, contentDescription = "Judul", tint = if (isSystemInDarkTheme()) Ocean4 else Ocean7)
+                            Icon(
+                                imageVector = Icons.Filled.Title,
+                                contentDescription = "Judul",
+                                tint = if (isSystemInDarkTheme()) Ocean4 else Ocean7
+                            )
                         },
                         singleLine = true,
                         colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -155,10 +155,14 @@ fun AddArtikel(navController: NavController) {
                     OutlinedTextField(
                         value = topic,
                         onValueChange = { topic = it },
-                        label = { Text("Topic", color = if (isSystemInDarkTheme()) Ocean4 else Ocean7) },
-                        placeholder = { Text("Masukkan Topic artikel", color = textColor) },
+                        label = { Text("Topik", color = textColor) },
+                        placeholder = { Text("Masukkan topik artikel", color = textColor) },
                         leadingIcon = {
-                            Icon(Icons.Filled.Topic, contentDescription = "Topic", tint = if (isSystemInDarkTheme()) Ocean4 else Ocean7)
+                            Icon(
+                                imageVector = Icons.Filled.Subject,
+                                contentDescription = "Topik",
+                                tint = if (isSystemInDarkTheme()) Ocean4 else Ocean7
+                            )
                         },
                         singleLine = true,
                         colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -179,10 +183,14 @@ fun AddArtikel(navController: NavController) {
                     OutlinedTextField(
                         value = category,
                         onValueChange = { category = it },
-                        label = { Text("Kategori", color = if (isSystemInDarkTheme()) Ocean4 else Ocean7) },
+                        label = { Text("Kategori", color = textColor) },
                         placeholder = { Text("Masukkan kategori artikel", color = textColor) },
                         leadingIcon = {
-                            Icon(Icons.Filled.Topic, contentDescription = "Kategori", tint = if (isSystemInDarkTheme()) Ocean4 else Ocean7)
+                            Icon(
+                                imageVector = Icons.Filled.Category,
+                                contentDescription = "Kategori",
+                                tint = if (isSystemInDarkTheme()) Ocean4 else Ocean7
+                            )
                         },
                         singleLine = true,
                         colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -225,7 +233,6 @@ fun AddArtikel(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Container WebView dengan tinggi tetap
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -244,7 +251,6 @@ fun AddArtikel(navController: NavController) {
                                 webViewClient = object : WebViewClient() {
                                     override fun onPageFinished(view: WebView?, url: String?) {
                                         super.onPageFinished(view, url)
-                                        // Penyesuaian warna sesuai tema
                                         evaluateJavascript("document.body.style.backgroundColor = '$backgroundColorHex';", null)
                                         evaluateJavascript("document.getElementById('editor-container').style.backgroundColor = '$backgroundColorHex';", null)
                                         evaluateJavascript("document.getElementById('toolbar').style.backgroundColor = '$backgroundColorHex';", null)
@@ -306,7 +312,7 @@ fun AddArtikel(navController: NavController) {
                     OutlinedButton(
                         onClick = { navController.popBackStack() },
                         colors = ButtonDefaults.outlinedButtonColors(
-                            backgroundColor = if (isSystemInDarkTheme()) ButtonPressedDark else ButtonPressedLight,
+                            backgroundColor = Color.Transparent,
                             contentColor = if (isSystemInDarkTheme()) TextDarkColor else TextLightColor
                         ),
                         shape = RoundedCornerShape(8.dp),
@@ -338,12 +344,10 @@ fun AddArtikel(navController: NavController) {
                                     }
                                 }
 
-                                // Get content from WebView
                                 contentDeferred = CompletableDeferred()
                                 webViewRef?.evaluateJavascript("getContent()", null)
                                 val contentValue = contentDeferred?.await() ?: ""
 
-                                // Validate fields
                                 if (title.isBlank() || topic.isBlank()) {
                                     Toast.makeText(context, "Judul dan Kategori tidak boleh kosong", Toast.LENGTH_SHORT).show()
                                 } else {

@@ -22,12 +22,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -39,6 +34,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
@@ -52,6 +48,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.callcenter.kidcare.R
+import com.callcenter.kidcare.data.LocaleManager
 import com.callcenter.kidcare.ui.funcauth.FunLoginGoogle
 import com.callcenter.kidcare.ui.theme.FunctionalRed
 import com.callcenter.kidcare.ui.theme.Lavender0
@@ -88,6 +85,9 @@ fun UiRegister() {
     var dialogVisible by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
 
+    var passwordErrorResId by remember { mutableStateOf<Int?>(null) }
+    var confirmPasswordErrorResId by remember { mutableStateOf<Int?>(null) }
+
     // Back Press Handler
     DisposableEffect(context) {
         val callback = object : OnBackPressedCallback(true) {
@@ -109,6 +109,11 @@ fun UiRegister() {
     var titleVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         titleVisible = true
+    }
+
+    // Set Locale
+    LaunchedEffect(Unit) {
+        LocaleManager.setLocale(context)
     }
 
     Box(
@@ -147,7 +152,7 @@ fun UiRegister() {
                     @Suppress("DEPRECATION")
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back to Google Login",
+                        contentDescription = stringResource(id = R.string.back_to_login),
                         tint = Ocean7,
                         modifier = Modifier.size(24.dp)
                     )
@@ -165,7 +170,7 @@ fun UiRegister() {
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.assets_bg_register),
-                    contentDescription = "Register Image",
+                    contentDescription = stringResource(id = R.string.register_image),
                     modifier = Modifier
                         .fillMaxWidth(0.35f)
                         .aspectRatio(1f)
@@ -180,7 +185,7 @@ fun UiRegister() {
                 exit = fadeOut()
             ) {
                 Text(
-                    text = "Daftar Akun",
+                    text = stringResource(id = R.string.register_account),
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontSize = 28.sp,
                         fontWeight = FontWeight.ExtraBold,
@@ -213,11 +218,11 @@ fun UiRegister() {
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("Email", color = Ocean7) },
+                        label = { Text(stringResource(id = R.string.email), color = Ocean7) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Email,
-                                contentDescription = "Email Icon",
+                                contentDescription = stringResource(id = R.string.email_icon_description),
                                 tint = Ocean8
                             )
                         },
@@ -249,13 +254,13 @@ fun UiRegister() {
                         value = password,
                         onValueChange = {
                             password = it
-                            passwordError = if (it.length < 8) "Password harus minimal 8 karakter" else ""
+                            passwordErrorResId = if (it.length < 8) R.string.password_min_length else null
                         },
-                        label = { Text("Password", color = Ocean7) },
+                        label = { Text(stringResource(id = R.string.password), color = Ocean7) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Lock,
-                                contentDescription = "Password Icon",
+                                contentDescription = stringResource(id = R.string.password_icon_description),
                                 tint = Ocean8
                             )
                         },
@@ -310,13 +315,13 @@ fun UiRegister() {
                         value = confirmPassword,
                         onValueChange = {
                             confirmPassword = it
-                            confirmPasswordError = if (it != password) "Password tidak cocok" else ""
+                            confirmPasswordErrorResId = if (it != password) R.string.password_mismatch else null
                         },
-                        label = { Text("Konfirmasi Password", color = Ocean7) },
+                        label = { Text(stringResource(id = R.string.confirm_password), color = Ocean7) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Lock,
-                                contentDescription = "Confirm Password Icon",
+                                contentDescription = stringResource(id = R.string.confirm_password_icon),
                                 tint = Ocean8
                             )
                         },
@@ -374,31 +379,35 @@ fun UiRegister() {
                                 auth.createUserWithEmailAndPassword(email, password)
                                     .addOnCompleteListener { task ->
                                         loading = false
-                                        // Inside UiRegister composable after successful registration and email verification sent
                                         if (task.isSuccessful) {
                                             auth.currentUser?.sendEmailVerification()
                                                 ?.addOnCompleteListener { verificationTask ->
                                                     if (verificationTask.isSuccessful) {
-                                                        auth.signOut() // Sign out the user after sending verification email
+                                                        auth.signOut()
                                                         email = ""
                                                         password = ""
                                                         confirmPassword = ""
                                                         passwordError = ""
                                                         confirmPasswordError = ""
-                                                        dialogMessage = "Registrasi berhasil! Silakan cek email Anda untuk verifikasi akun."
+                                                        dialogMessage = context.getString(R.string.registration_success)
                                                     } else {
-                                                        dialogMessage = "Gagal mengirim email verifikasi: ${verificationTask.exception?.message}"
+                                                        dialogMessage = context.getString(
+                                                            R.string.verification_email_failed,
+                                                            verificationTask.exception?.message ?: ""
+                                                        )
                                                     }
                                                     dialogVisible = true
                                                 }
                                         } else {
-                                            dialogMessage = "Registrasi gagal: ${task.exception?.message}"
+                                            dialogMessage = context.getString(
+                                                R.string.registration_failed,
+                                                task.exception?.message ?: ""
+                                            )
                                             dialogVisible = true
                                         }
-
                                     }
                             } else {
-                                dialogMessage = "Silakan isi semua field dengan benar."
+                                dialogMessage = context.getString(R.string.fill_fields_correctly)
                                 dialogVisible = true
                             }
                         },
@@ -421,12 +430,12 @@ fun UiRegister() {
                         } else {
                             Icon(
                                 imageVector = Icons.Default.PersonAdd,
-                                contentDescription = "Register Icon",
+                                contentDescription = stringResource(id = R.string.register_icon),
                                 tint = Neutral0,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Daftar", fontWeight = FontWeight.Bold)
+                            Text(text = stringResource(id = R.string.register_button), fontWeight = FontWeight.Bold)
                         }
                     }
 
@@ -436,9 +445,8 @@ fun UiRegister() {
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        val context = LocalContext.current
                         val annotatedText = buildAnnotatedString {
-                            append("Dengan mendaftar anda telah membaca dan menyetujui ")
+                            append(stringResource(id = R.string.register_terms_intro))
                             pushStringAnnotation(
                                 tag = "terms",
                                 annotation = "terms"
@@ -450,10 +458,10 @@ fun UiRegister() {
                                     textDecoration = TextDecoration.Underline
                                 )
                             ) {
-                                append("Syarat & Ketentuan")
+                                append(stringResource(id = R.string.terms_conditions))
                             }
                             pop()
-                            append(" dari Tim KidCare.")
+                            append(stringResource(id = R.string.register_terms_outro))
                         }
 
                         Text(
@@ -491,14 +499,14 @@ fun UiRegister() {
                             .padding(vertical = 8.dp)
                     ) {
                         Text(
-                            text = "Sudah punya akun? ",
+                            text = stringResource(id = R.string.already_have_account),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontFamily = FontFamily.SansSerif
                             ),
                             color = Neutral8
                         )
                         Text(
-                            text = "Masuk",
+                            text = stringResource(id = R.string.login),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontFamily = FontFamily.SansSerif,
                                 textDecoration = TextDecoration.Underline,
@@ -539,7 +547,7 @@ fun UiRegister() {
                             contentColor = Neutral0
                         )
                     ) {
-                        Text("OK", color = Neutral0)
+                        Text(text = stringResource(id = R.string.ok))
                     }
                 },
                 shape = RoundedCornerShape(16.dp),
